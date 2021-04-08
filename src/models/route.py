@@ -1,6 +1,6 @@
 class Route:
 
-    def ___init__(self, route_id, country, city, area, street):
+    def __init__(self, route_id, country, city, area, street):
         self.route_id = route_id
 
         self.country = country

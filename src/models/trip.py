@@ -27,3 +27,19 @@ class Trip:
 
         self.user_id = user_id
         self.username = username
+
+    
+    def to_string(self):
+        return {
+            'trip_id': self.trip_id,
+            'book_date_time': self.book_date_time,
+            'start_date_time': self.start_date_time,
+            'end_date_time': self.end_date_time,
+            'route_id': self.route_id,
+            'country': self.country,
+            'city': self.city,
+            'area': self.area,
+            'street': self.street,
+            'user_id': self.user_id,
+            'username': self.username
+        }

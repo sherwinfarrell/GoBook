@@ -6,20 +6,26 @@ from pynamodb.attributes import UnicodeAttribute, BooleanAttribute
 from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 
 from models.trip import Trip
-from db_utils import query_model
+from storage.utils import query_model
+from const import ddb_local_host
+from config import ddb_config
 
-from user_date_time_gsi import UserDateTimeGSI
-from country_city_gsi import CountryCityGSI
-from route_date_time_gsi import RouteDateTimeGSI
+from storage.models.user_date_time_gsi import UserDateTimeGSI
+from storage.models.country_city_gsi import CountryCityGSI
+from storage.models.route_date_time_gsi import RouteDateTimeGSI
 
 
 class TripsTable(Model):
 
     class Meta:
         table_name = 'trips-table'
-        region = 'eu-west-1'
+        host = ddb_local_host + ddb_config.regions[0].port
+        region = ddb_config.regions[0].code
         read_capacity_units = 2
         write_capacity_units = 1
+        connect_timeout_seconds = 1
+        read_timeout_seconds = 1
+        max_retry_attempts = 0
 
     trip_id = UnicodeAttribute(hash_key=True)
     book_date_time = UnicodeAttribute()
@@ -82,8 +88,8 @@ class TripsTable(Model):
     def get_trip_by_id(trip_id):
         if not trip_id:
             return
-
-        trip = [t.to_trip() for t in TripsTable.get(trip_id)]
+        trip = TripsTable.get(trip_id)
+        trip = trip.to_trip()
         return trip
 
     
@@ -104,11 +110,26 @@ class TripsTable(Model):
         routes = TripsTable.get_trip_by_id(trip_id)
         
 
+    @classmethod
+    def change_region(cls, region):
+        if not region:
+            return
+        
+        cls._connection = None
+        
+        cls.Meta.region = region.code
+        cls.Meta.host = ddb_local_host + region.port
+
+
+    @classmethod
+    def get_host_and_region(cls):
+        return (cls.Meta.host, cls.Meta.region)
+
 
     def write(self):
 
         self.book_date_time = datetime.now(timezone.utc).isoformat(timespec='seconds')
-
+        print(self)
         self.save()
 
 
@@ -130,7 +151,3 @@ class TripsTable(Model):
             )
 
         return trip
-
-if __name__ == "__main__":
-    Trip()
-    print('kk')

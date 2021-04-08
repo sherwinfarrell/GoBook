@@ -1,3 +1,4 @@
+
 def query_model(
     model, 
     hash_key, 
@@ -21,7 +22,7 @@ def query_model(
 
         return items.last_evaluated_key
 
-    if not model or hash_key:
+    if not model or not hash_key:
         return
         
     results = []

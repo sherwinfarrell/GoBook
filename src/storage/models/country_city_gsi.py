@@ -6,7 +6,7 @@ from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 class CountryCityGSI(GlobalSecondaryIndex):
 
     class Meta:
-        index_name = 'trip-table'
+        index_name = 'country-city-gsi'
         projection = AllProjection()
         
         read_capacity_units = 2
