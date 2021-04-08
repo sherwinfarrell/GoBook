@@ -7,3 +7,13 @@ class Route:
         self.city = city
         self.area = area
         self.street = street
+
+
+    def to_string(self):
+        return {
+            'route_id': self.route_id,
+            'country': self.country,
+            'city': self.city,
+            'area': self.area,
+            'street': self.street,
+        }

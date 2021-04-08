@@ -5,7 +5,7 @@ from models.route import Route
 from models.user import User
 
 from storage.models.trips_table import TripsTable
-from storage.storage_client import book_trip, get_user_trips
+from storage.storage_client import book_trip, get_user_trips, get_routes
 
 
 if __name__ == '__main__':
@@ -22,5 +22,5 @@ if __name__ == '__main__':
 
     user_trips = get_user_trips(user)
 
-    print([t.to_string() for t in user_trips])
+    print([r.to_string() for r in get_routes('ire')])
 

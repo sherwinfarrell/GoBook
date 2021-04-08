@@ -37,9 +37,10 @@ def get_current_route_capacity(route):
 
 
 @check_connection
-def get_routes(country, city, area, street):
-    # to be implemented
-    return
+def get_routes(country, city=None, area=None, street=None):
+    routes = TripsTable.get_routes(country, city, area, street)
+    
+    return routes
     
 
 @check_connection

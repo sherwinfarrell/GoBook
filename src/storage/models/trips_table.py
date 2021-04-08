@@ -6,6 +6,7 @@ from pynamodb.attributes import UnicodeAttribute, BooleanAttribute
 from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 
 from models.trip import Trip
+from models.route import Route
 from storage.utils import query_model
 from const import ddb_local_host
 from config import ddb_config
@@ -106,8 +107,10 @@ class TripsTable(Model):
     def get_routes(country, city=None, area=None, street=None):
         if not country:
             return
+        
+        routes = TripsTable.country_city_gsi.get_routes(TripsTable, country, city, area, street)
 
-        routes = TripsTable.get_trip_by_id(trip_id)
+        return routes
         
 
     @classmethod
@@ -151,3 +154,13 @@ class TripsTable(Model):
             )
 
         return trip
+
+
+    def to_route(self):
+        return Route(
+            self.route_id,
+            self.country,
+            self.city,
+            self.area,
+            self.street
+        )
