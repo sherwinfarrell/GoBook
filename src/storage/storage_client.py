@@ -4,6 +4,7 @@ from storage.models.trips_table import TripsTable
 from storage.decorators import check_connection
 
 
+@check_connection
 def book_trip(user, route, start_date_time, end_date_time):
     if not user or not route:
         return
@@ -11,19 +12,10 @@ def book_trip(user, route, start_date_time, end_date_time):
     trip = TripsTable.from_user_and_route(user, route)
     trip.start_date_time = start_date_time
     trip.end_date_time = end_date_time
+    
+    trip.write()
 
-    # writing to all regions for demonstration purposes,
-    # writes would automatically replicate using dynamodb global
-    # tables in practice.
-    for region in ddb_config.regions:
-        try:
-            TripsTable.change_region(region)
-            trip.write()
-        except:
-            pass
-    TripsTable.change_region(ddb_config.regions[0]) # changing back to default region
-
-    return trip.trip_id
+    return trip.to_trip()
 
 
 @check_connection
@@ -59,5 +51,3 @@ def cancel_trip(trip):
         return
 
     TripsTable.remove_trip_by_id(trip.trip_id)
-
-    return trip.trip_id
