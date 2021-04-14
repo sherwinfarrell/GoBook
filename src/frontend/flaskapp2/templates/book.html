@@ -1,0 +1,217 @@
+<html>
+  <head>
+    <title>Journey Booking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        
+        <div class="col">
+                <br/>
+
+
+                <span><p>Your UUID is: </p><p id="sessionId"></p></span>
+
+
+                  <div class="form-group">
+                    <label for="selectCity">Example select</label>
+                    <select class="form-control" id="selectCity">
+                      <option>Dublin</option>
+                      <option>Carlow</option>
+                      <option>Wexford</option>
+                      <option>Galway</option>
+                      <option>Cork</option>
+                    </select>
+                  </div>
+                  <!-- <div class="form-group">
+                    <label for="from">From</label>
+                    <input type="text" class="form-control" id="from" placeholder="11-04-2021">
+                  </div>
+                  <div class="form-group">
+                    <label for="to">To</label>
+                    <input type="text" class="form-control" id="to" placeholder="11-04-2021">
+                  </div> -->
+
+                  <div class="form-group">
+                    <label for="selectRoute">Route Number</label>
+                    <select class="form-control" id="selectRoute">
+                      <option>Route 1</option>
+                      <option>Route 2</option>
+                      <option>Route 3</option>
+                      <option>Route 4</option>
+                      <option>Route 5</option>
+                    </select>
+                  </div>
+                  <button onClick="bookTrip(this.id)" id="bookTrip" class="btn btn-outline-primary">Book Trip</button>
+
+      </div>
+
+      <div class="col">
+          <br/>
+
+          <!-- <div class="form-group">
+            <label for="currentBookings">Booked Routes</label>
+            <select class="form-control" id="currentBookings">
+              <option>Wexford Route 1 21-04-201 to 21-04-2021</option>
+            </select>
+          </div> -->
+              <div class="form-group">
+                <label for="bookedTrip">Booked Trip</label>
+                <input type="text" id="bookedTrip" placeholder="Route 1 Wexford 21-04-2021 to 21-04-2021">
+              </div>
+              <button id="cancelTrip" onClick="cancelTrip(this.id)" class="btn btn-outline-primary">Cancel Trip</button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <script>
+
+    // let a = document.getElementById('bookTrip').onClick(() => console.log("heelo"));
+    // // console.log(a);
+    // let sessionTimeout;
+
+
+    // function logout() {
+    //   alert("New User Session is being generated")
+    //   let uuid = getNewID();
+    //   document.getElementById('sessionId').innerHTML = uuid;
+
+    //   localStorage.setItem('uuid', uuid);
+    //   resetTimer()
+
+    // }
+
+    // function resetTimer() {
+    //   clearTimeout(sessionTimeout);
+    //   time = setTimeout(logout, 3000);
+    // }
+
+
+    function idleLogout() {
+          var t;
+          window.onload = resetTimer;
+          window.onmousemove = resetTimer;
+          window.onmousedown = resetTimer;  // catches touchscreen presses as well      
+          window.ontouchstart = resetTimer; // catches touchscreen swipes as well 
+          window.onclick = resetTimer;      // catches touchpad clicks as well
+          window.onkeydown = resetTimer;   
+          window.addEventListener('scroll', resetTimer, true); // improved; see comments
+
+          function yourFunction() {
+              // your function for too long inactivity goes here
+              // e.g. window.location.href = 'logout.php';
+              alert("New User Session is being generated")
+              let uuid = getNewID();
+              document.getElementById('sessionId').innerHTML = uuid;
+
+              localStorage.setItem('uuid', uuid);
+              idleLogout()
+
+          }
+
+          function resetTimer() {
+              clearTimeout(t);
+              t = setTimeout(yourFunction, 40000);  // time is in milliseconds
+          }
+  }
+  idleLogout();
+  
+
+
+  // window.onload = resetTimer;
+
+  window.onload = function () {
+                          if (!('hasCodeRunBefore' in localStorage)){
+                            /** Your code here. **/
+                            console.log("First Time Here");
+                            let uuid= getNewID();
+                            document.getElementById('sessionId').innerHTML = uuid;
+                            
+                            localStorage.setItem('uuid', uuid);
+                            localStorage.setItem("hasCodeRunBefore", true);
+                        }
+                        else{
+                          console.log("Not First Time")
+
+                          document.getElementById('sessionId').innerHTML = localStorage.getItem("uuid");
+
+                        }
+                    }
+
+    // document.onmousemove = resetTimer;
+    // document.onkeypress = resetTimer;
+
+   
+
+   
+
+    function getNewID()
+    {
+        var d = new Date().getTime();
+        if (window.performance && typeof window.performance.now === "function")
+        {
+            d += performance.now();
+            ; // use high-precision timer if available
+        }
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c)
+        {
+            var r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    }
+
+
+    function bookTrip(a){
+
+      var selectedCityIndex = document.getElementById("selectCity");
+      var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
+      var selectedRouteIndex = document.getElementById("selectRoute");
+      var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].text;
+      document.getElementById("bookedTrip").value = selectedCity+'-'+selectedRoute;
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", '/bookTrip', true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(JSON.stringify({
+          value: "Hi",
+          city: selectedCity,
+          route: selectedRoute
+      }));
+    }
+
+
+    function cancelTrip(a){
+
+        var bookedTrip = document.getElementById("bookedTrip").value;
+        // console.log(bookedTrip);
+        var bookedTrip = bookedTrip.split("-");
+        console.log(bookedTrip);
+
+        let city = bookedTrip[0];
+        let route = bookedTrip[1];       
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", '/cancelTrip', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({
+            value: "Hi",
+            city: city,
+            route: route
+        }));
+    }
+
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+
+  </body>
+</html>
