@@ -30,9 +30,8 @@ def bookTrip():
 
         try:
             producer = KafkaProducer(
-            bootstrap_servers=['localhost:9093'],
+            bootstrap_servers=['kafka_kafka_1:9093'],
             value_serializer=lambda x: dumps(x).encode('utf-8'))
-
             data = {'route': selectedRoute, 'city': selectedCity}
             producer.send('Booking', value=data)
         except Exception as e:

@@ -4,5 +4,6 @@ WORKDIR /
 RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 COPY . /
+ENV PYTHONUNBUFFERED=1
 ENTRYPOINT [ "python3" ]
-CMD [ "flaskapp1.py" ]
+CMD ["-u", "flaskapp1.py" ]

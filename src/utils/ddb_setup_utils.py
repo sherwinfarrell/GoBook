@@ -23,6 +23,8 @@ def run_local_db_containers():
 
     time.sleep(5)
 
+
+# don't use it
 def create_tables_in_all_regions():
     for region in ddb_regions.values():
         try:
