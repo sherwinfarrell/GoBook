@@ -1,13 +1,19 @@
-version: '3.7'
+version: '3'
 services:
 
-    app:
-        build: app
+    flaskapp1:
+        build: ./flaskapp1
+        ports:
+            - "5001:5000"
+    flaskapp2:
+        build: ./flaskapp2
+        ports:
+            - "5002:5000"
 
     nginx:
-        container_name: nginx
-        build: nginx
+        build: ./nginx
         ports:
-            - 80:80
+            - "8080:80"
         depends_on:
-           - app
+           - flaskapp1
+           - flaskapp2
