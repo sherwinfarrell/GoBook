@@ -1,0 +1,181 @@
+<html>
+  <head>
+    <title>Journey Booking</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" type="text/css" href="./book.css"> -->
+
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+          
+          <div class="col">
+              <br/>
+
+              <span>
+                <label for="userid">User Id</label>
+                <input type="text" id="userid" >
+              </span>
+
+              <button onClick="getBookedTrips(this.id)" id="gettrips" class="btn btn-outline-primary">Get Trips</button>
+
+
+              <div class="form-group">
+                <label for="selectCity">Example select</label>
+                <select class="form-control" id="selectCity">
+                  <option>Dublin</option>
+                  <option>Carlow</option>
+                  <option>Wexford</option>
+                  <option>Galway</option>
+                  <option>Cork</option>
+                </select>
+              </div>
+
+
+              <div class="form-group">
+                <label for="selectRoute">Route Number</label>
+                <select class="form-control" id="selectRoute">
+                  <option>Route 1</option>
+                  <option>Route 2</option>
+                  <option>Route 3</option>
+                  <option>Route 4</option>
+                  <option>Route 5</option>
+                </select>
+              </div>
+
+              <button onClick="bookTrip(this.id)" id="bookTrip" class="btn btn-outline-primary">Book Trip</button>
+        </div>
+
+        <div class="col">
+            <br/>
+
+            <select class="selectpicker" id="multiselect" multiple ></select>
+                <!-- <div class="form-group">
+                  <label for="bookedTrip">Booked Trip</label>
+                  <input type="text" id="bookedTrip" placeholder="Route 1 Wexford 21-04-2021 to 21-04-2021">
+                </div> -->
+                <br/>
+                <br/>
+              <button id="cancelTrip" onClick="cancelTrip(this.id)" class="btn btn-outline-primary">Cancel Trip</button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <script>
+
+
+
+      function getBookedTrips(a){
+          useridinput = document.getElementById('userid')
+          userid = useridinput.value
+          // console.log(useridinput.value)
+          data = {'user_id': userid}
+          fetch("/getBookedTrips", {
+            method: "POST", 
+            headers: new Headers({'content-type': 'application/json'}),
+
+            body: JSON.stringify({
+              user_id: userid
+            })
+          }).then(res => {
+            console.log("Request complete! response:", );
+            // console.log(res.json())
+            return res.json()
+          }).then(res=> {
+            // let str = JSON.stringify(res);
+            console.log(res);
+            res = res['return_data']
+            
+            daySelect = document.getElementById('multiselect');
+            Object.keys(res).forEach((key)=>{
+            daySelect.options[daySelect.options.length] = new Option( key + " " + res[key], key + " " + res[key] )
+          })
+        })
+
+      }
+
+
+
+
+      function bookTrip(a){
+
+        var selectedCityIndex = document.getElementById("selectCity");
+        var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
+        var selectedRouteIndex = document.getElementById("selectRoute");
+        var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].text;
+
+        console.log(selectedRoute);
+
+        fetch("/bookTrip", {
+            method: "POST", 
+            headers: new Headers({'content-type': 'application/json'}),
+
+            body: JSON.stringify({
+              value: "Hi",
+            city: selectedCity,
+            route: selectedRoute
+            })
+          }).then(res => {
+            console.log("Request complete! response:", );
+            // console.log(res.json())
+            return res.json()
+          }).then(res=> {console.log(res)
+
+            res = res['return_data']
+            daySelect = document.getElementById('multiselect');
+            Object.keys(res).forEach((key)=>{
+            daySelect.options[daySelect.options.length] = new Option( key + " " + res[key], key + " " + res[key] )
+            })
+
+
+          })
+      }
+
+
+      function cancelTrip(a){
+
+          var bookedTrip = document.getElementById("multiselect").value;
+          console.log(bookedTrip);
+      
+          
+          
+
+          fetch("/cancelTrip", {
+            method: "POST", 
+            headers: new Headers({'content-type': 'application/json'}),
+
+            body: JSON.stringify({
+              trip_id : bookedTrip
+            })
+          }).then(res => {
+            console.log("Request complete! response:", );
+            // console.log(res.json())
+            return res.json()
+          }).then(res=> {console.log(res)
+
+              res = res['Status']
+              if(res == "Success"){
+                console.log("Deleting the booking as the result was a success")
+              daySelect = document.getElementById('multiselect');
+              for (var i=0; i<daySelect.length; i++) {
+                  if (daySelect.options[i].value == bookedTrip){
+                      daySelect.remove(i);}
+              }          
+            }
+            })
+      }
+
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+  </body>
+</html>
+
+

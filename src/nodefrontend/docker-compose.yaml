@@ -1,0 +1,24 @@
+version: '3'
+services:
+
+    nodeapp1:
+        build: ./nodeapp1
+        ports:
+            - "3001:3000"
+    nodeapp2:
+        build: ./nodeapp2
+        ports:
+            - "3002:3000"
+
+    nginx:
+        build: ./nginx
+        ports:
+            - "8080:80"
+        depends_on:
+           - nodeapp1
+           - nodeapp2
+
+networks:
+    default:
+        external:
+            name: distNet
