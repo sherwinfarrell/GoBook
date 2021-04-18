@@ -4,4 +4,5 @@ WORKDIR /
 RUN pip3 install -r requirements.txt
 COPY . /
 ENTRYPOINT [ "python3" ]
-CMD [ "flaskapp2.py" ]
+ENV PYTHONUNBUFFERED=1
+CMD ["-u", "flaskapp2.py" ]

@@ -20,7 +20,7 @@ class TripsTable(Model):
 
     class Meta:
         table_name = 'trips-table'
-        host = ddb_local_host + ddb_config.regions[0].port
+        # host = ddb_local_host + '4444'
         region = ddb_config.regions[0].code
         read_capacity_units = 2
         write_capacity_units = 1
@@ -121,7 +121,7 @@ class TripsTable(Model):
         cls._connection = None
         
         cls.Meta.region = region.code
-        cls.Meta.host = ddb_local_host + region.port
+        # cls.Meta.host = ddb_local_host + region.port
 
 
     @classmethod

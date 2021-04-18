@@ -17,3 +17,8 @@ services:
         depends_on:
            - flaskapp1
            - flaskapp2
+
+networks:
+    default:
+        external:
+            name: distNet
