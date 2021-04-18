@@ -40,7 +40,8 @@ class Consumer(threading.Thread):
                 data = {}
                 x = json.loads(message.value.decode())
                 if self.topic == "Routes":
-                    data["result"] = get_routes(x["data"]["country"])
+                    data["result"] = get_routes(x["data"]["country"],
+                                                x["data"]["city"])
                     data["id"] = x["id"]
                     prod.send("GetRoutes", value=data)
                 elif self.topic == "Booking":
