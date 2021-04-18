@@ -20,10 +20,20 @@
 
               <button onClick="getBookedTrips(this.id)" id="gettrips" class="btn btn-outline-primary">Get Trips</button>
 
+              <div class="form-group">
+                <label for="selectCountry">Example select</label>
+                <select class="form-control" id="selectCountry" onchange="getCities(this.id)">
+                  <option>Ireland</option>
+                  <option>UK</option>
+                  <option>US</option>
+                  <option>Germany</option>
+                  <option>India</option>
+                </select>
+              </div>
 
               <div class="form-group">
                 <label for="selectCity">Example select</label>
-                <select class="form-control" id="selectCity">
+                <select class="form-control" id="selectCity" onchange="getRoutes(this.id)">
                   <option>Dublin</option>
                   <option>Carlow</option>
                   <option>Wexford</option>
@@ -36,11 +46,11 @@
               <div class="form-group">
                 <label for="selectRoute">Route Number</label>
                 <select class="form-control" id="selectRoute">
-                  <option>Route 1</option>
-                  <option>Route 2</option>
-                  <option>Route 3</option>
-                  <option>Route 4</option>
-                  <option>Route 5</option>
+                    <option value="Dublin1">Route:1</option>
+                    <option value="Dublin2">Route:2</option>
+                    <option value="Dublin3">Route:3</option>
+                    <option value="Dublin4">Route:4</option>
+                    <option value="Dublin5">Route:5</option>
                 </select>
               </div>
 
@@ -61,18 +71,103 @@
         </div>
 
       </div>
+      <div class="row">
+        <p id="error"></p>
+      </div>
     </div>
 
 
     <script>
 
+        function getCities(){
 
+            var selectedCountryIndex = document.getElementById("selectCountry");
+            var selectedCountry = selectedCountryIndex.options[selectedCountryIndex.selectedIndex].text;
+            var selectElement = document.getElementById('selectCity');
+            selectElement.innerHTML = '';
+
+            let citySelect = document.getElementById('selectCity');
+
+            if(selectedCountry=="Ireland"){
+              ['Dublin','Cork', 'Galway', 'Limerick', 'Carlow'].forEach((key)=>{
+                        citySelect.options[citySelect.options.length] = new Option( key, key )
+                      })
+            }
+
+            else if(selectedCountry=="UK"){
+              ['London','Manchester', 'Edinburgh', 'Cardiff', 'Belfast'].forEach((key)=>{
+                        citySelect.options[citySelect.options.length] = new Option( key, key )
+                      })
+            }
+
+            else if(selectedCountry=="US"){
+              ['NY','Seattle', 'Houston', 'LA', 'Miami'].forEach((key)=>{
+                        citySelect.options[citySelect.options.length] = new Option( key, key )
+                      })
+            }
+
+            else if(selectedCountry=="Germany"){
+              ['Berlin','Munich', 'Dortmund', 'Darmstad', 'Frankfurt'].forEach((key)=>{
+                        citySelect.options[citySelect.options.length] = new Option( key, key )
+                      })
+            }
+
+            else if(selectedCountry=="India"){
+              ['Delhi','Mumbai', 'Kolkata', 'Banglore', 'Goa'].forEach((key)=>{
+                        citySelect.options[citySelect.options.length] = new Option( key, key )
+                      })
+            }
+
+            getRoutes();
+
+          }
+
+        function getRoutes(){
+                  var selectedCityIndex = document.getElementById("selectCity");
+                  var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
+
+                  var selectElement = document.getElementById('selectRoute');
+                  selectElement.innerHTML = '';
+
+                  console.log(selectedCity);
+
+                  useridinput = document.getElementById('userid')
+                  userid = useridinput.value
+
+                  fetch("/getRoutes", {
+                    method: "POST", 
+                    headers: new Headers({'content-type': 'application/json'}),
+
+                    body: JSON.stringify({
+                      user_id: userid,
+                      city: selectedCity
+
+                    })
+                  }).then(res => {
+                    console.log("Request complete! response:", );
+                    // console.log(res.json())
+                    return res.json()
+                  }).then(res=> {
+                    // let str = JSON.stringify(res);
+                    console.log(res);
+                    // res = res['return_data']
+                    
+                    routeSelect = document.getElementById('selectRoute');
+                    Object.keys(Array.from(Array(5).keys())).forEach((key)=>{
+                      routeSelect.options[routeSelect.options.length] = new Option( "Route:"+key, selectedCity+key )
+                  })
+                })
+
+              }
 
       function getBookedTrips(a){
           useridinput = document.getElementById('userid')
           userid = useridinput.value
+          console.log(userid)
+          if(userid){
           // console.log(useridinput.value)
           data = {'user_id': userid}
+         
           fetch("/getBookedTrips", {
             method: "POST", 
             headers: new Headers({'content-type': 'application/json'}),
@@ -94,6 +189,13 @@
             daySelect.options[daySelect.options.length] = new Option( key + " " + res[key], key + " " + res[key] )
           })
         })
+        
+      }
+
+        else{
+          let error = document.getElementById('error')
+          error.innerText = "Please Enter your User Id"
+        }
 
       }
 
@@ -102,20 +204,21 @@
 
       function bookTrip(a){
 
-        var selectedCityIndex = document.getElementById("selectCity");
-        var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
+        // var selectedCityIndex = document.getElementById("selectCity");
+        // var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
         var selectedRouteIndex = document.getElementById("selectRoute");
         var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].text;
+        let useridinput = document.getElementById('userid')
+        userid = useridinput.value
 
         console.log(selectedRoute);
-
+        if(userid){
         fetch("/bookTrip", {
             method: "POST", 
             headers: new Headers({'content-type': 'application/json'}),
 
             body: JSON.stringify({
-              value: "Hi",
-            city: selectedCity,
+            userid: useridinput,
             route: selectedRoute
             })
           }).then(res => {
@@ -132,6 +235,11 @@
 
 
           })
+        }
+        else{
+          let error = document.getElementById('error')
+          error.innerText = "Please Enter your User Id"
+        }
       }
 
 
@@ -139,8 +247,10 @@
 
           var bookedTrip = document.getElementById("multiselect").value;
           console.log(bookedTrip);
-      
+          let useridinput = document.getElementById('userid')
+          userid = useridinput.value
           
+          if(userid){
           
 
           fetch("/cancelTrip", {
@@ -148,8 +258,10 @@
             headers: new Headers({'content-type': 'application/json'}),
 
             body: JSON.stringify({
-              trip_id : bookedTrip
+              trip_id : bookedTrip,
+              userid: userid
             })
+
           }).then(res => {
             console.log("Request complete! response:", );
             // console.log(res.json())
@@ -160,12 +272,18 @@
               if(res == "Success"){
                 console.log("Deleting the booking as the result was a success")
               daySelect = document.getElementById('multiselect');
-              for (var i=0; i<daySelect.length; i++) {
+              for (var i=0; i<daySelect.length; i++) {  
                   if (daySelect.options[i].value == bookedTrip){
                       daySelect.remove(i);}
               }          
-            }
+              }
             })
+          }
+
+          else{
+              let error = document.getElementById('error')
+              error.innerText = "Please Enter your User Id"
+            }
       }
 
     </script>

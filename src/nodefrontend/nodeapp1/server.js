@@ -1,5 +1,4 @@
-// const http = require('http')
-// const rs = require('fs')
+
 const express = require('express')
 const { Kafka } = require('kafkajs')
 
@@ -14,7 +13,7 @@ const app = express()
 let kafkaClient = new Kafka({
     clientId: 'my-group-id',
 
-    brokers: ['kafka_kafka_1:9093']
+    brokers: ['localhost:9092']
   })
 
 // const client = new kafka.KafkaClient({kafkaHost: 'localhost:9092'});
@@ -38,21 +37,21 @@ app.get('/which', (req, res) =>{
 // })
 
 app.post('/bookTrip', async (request, response) => {
-    // print(request.body)
-    console.log("request came in "); 
     console.log(request.body)
 
+    let userid = req.body['userid']
+    let route = req.body['route']
+
+
     let error  = null
-
-
-    data = {'route': request.body['route'], 'city': request.body['city']}
+    // 'start_date_time': null, 'end_date_time': null
+    
+    data = {'id':userid, 'data':{'user':userid,'route':route}}
 
 
     try{
         const producer = kafkaClient.producer()
 
-        let routeValue = request.body['route']
-        let cityValue = request.body['city']
         await producer.connect()
         await producer.send({
         topic: 'Booking',
@@ -68,7 +67,7 @@ app.post('/bookTrip', async (request, response) => {
         const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
         await consumer.connect()
 
-        await consumer.subscribe({ topic: 'Booking' }) 
+        await consumer.subscribe({ topic: 'GetBooking' }) 
         
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
@@ -77,6 +76,7 @@ app.post('/bookTrip', async (request, response) => {
                     value: message.value.toString(),
                     headers: message.headers,
                 })
+
             },
         })
 
@@ -103,15 +103,16 @@ app.post('/bookTrip', async (request, response) => {
 
 app.post('/getBookedTrips', async (req, res)=> {
     console.log(req.body)
-    let userId = req.body['user_id']
-    data = userId
+    let userid = req.body['user_id']
+
+    data = {'id' : userid, 'data':{'user':userid}}
     let error = null
     try{
         const producer = kafkaClient.producer()
 
         await producer.connect()
         await producer.send({
-        topic: 'Booking',
+        topic: 'UserBookings',
         acks: -1,
         timeout: 30000,
         messages: [
@@ -124,7 +125,7 @@ app.post('/getBookedTrips', async (req, res)=> {
         const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
         await consumer.connect()
 
-        await consumer.subscribe({ topic: 'Booking' }) 
+        await consumer.subscribe({ topic: 'GetUserBookings' }) 
         
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
@@ -137,8 +138,6 @@ app.post('/getBookedTrips', async (req, res)=> {
         })
 
         await consumer.disconnect()
-
-
 
     }catch (e) {
 
@@ -164,14 +163,16 @@ app.post('/getBookedTrips', async (req, res)=> {
 app.post('/cancelTrip', async (req, res)=> {
     console.log(req.body)
     let trip_id = req.body['trip_id']
-    data = trip_id
+    let userid = req.body['userid']
+
+    data = { 'id': userid, 'data': {'trip_id': trip_id}}
     let error = null
     try{
         const producer = kafkaClient.producer()
 
         await producer.connect()
         await producer.send({
-        topic: 'Booking',
+        topic: 'Cancellation',
         acks: -1,
         timeout: 30000,
         messages: [
@@ -184,7 +185,7 @@ app.post('/cancelTrip', async (req, res)=> {
         const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
         await consumer.connect()
 
-        await consumer.subscribe({ topic: 'Booking' }) 
+        await consumer.subscribe({ topic: 'GetCancellation' }) 
         
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
@@ -198,8 +199,6 @@ app.post('/cancelTrip', async (req, res)=> {
 
         await consumer.disconnect()
 
-
-
     }catch (e) {
 
         console.error(e);
@@ -208,10 +207,64 @@ app.post('/cancelTrip', async (req, res)=> {
 
     }
 
+    res.setHeader('Content-Type', 'application/json');     // your JSON
 
-  
+    if(error){
+        res.send(JSON.stringify({ "Status": `Failure: ${error}` }))
+    }
+    else res.send(JSON.stringify({ "Status": "Success" }))
+})
 
 
+app.post('/getRoutes', async (req, res)=> {
+    console.log(req.body)
+    // let country = req.body['country']
+    let city = req.body['city']
+    let userid = req.body['userid']
+
+
+    data = {'id': userid, 'data': {'country':'Ireland', 'city': city}}
+
+    let error = null
+    try{
+        const producer = kafkaClient.producer()
+
+        await producer.connect()
+        await producer.send({
+        topic: 'Routes',
+        acks: -1,
+        timeout: 30000,
+        messages: [
+            { value: JSON.stringify(data)},
+        ],  
+        })  
+
+        await producer.disconnect()
+
+        const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
+        await consumer.connect()
+
+        await consumer.subscribe({ topic: 'GetRoutes' }) 
+        
+        await consumer.run({
+            eachMessage: async ({ topic, partition, message }) => {
+                console.log({
+                    key: message.key.toString(),
+                    value: message.value.toString(),
+                    headers: message.headers,
+                })
+            },
+        })
+
+        await consumer.disconnect()
+
+    }catch (e) {
+
+        console.error(e);
+
+        error= e
+
+    }
 
     res.setHeader('Content-Type', 'application/json');     // your JSON
 
