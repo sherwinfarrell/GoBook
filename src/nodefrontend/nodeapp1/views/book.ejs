@@ -210,6 +210,7 @@
         var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].text;
         let useridinput = document.getElementById('userid')
         userid = useridinput.value
+        console.log(userid)
 
         console.log(selectedRoute);
         if(userid){
@@ -218,7 +219,7 @@
             headers: new Headers({'content-type': 'application/json'}),
 
             body: JSON.stringify({
-            userid: useridinput,
+            userid: userid,
             route: selectedRoute
             })
           }).then(res => {

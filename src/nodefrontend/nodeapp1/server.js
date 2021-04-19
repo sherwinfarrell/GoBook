@@ -36,8 +36,8 @@ app.get('/which', (req, res) =>{
 //     fs.createReadStream('index.html').pipe(res)
 // })
 
-app.post('/bookTrip', async (request, response) => {
-    console.log(request.body)
+app.post('/bookTrip', async (req, res) => {
+    console.log(req.body)
 
     let userid = req.body['userid']
     let route = req.body['route']
@@ -46,7 +46,7 @@ app.post('/bookTrip', async (request, response) => {
     let error  = null
     // 'start_date_time': null, 'end_date_time': null
     
-    data = {'id':userid, 'data':{'user':userid,'route':route}}
+    data = {'id':userid, 'data':{'user':userid,'route':route,'start_date_time': null, 'end_date_time': null }}
 
 
     try{
@@ -72,8 +72,8 @@ app.post('/bookTrip', async (request, response) => {
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 console.log({
-                    key: message.key.toString(),
-                    value: message.value.toString(),
+                    key: message.key,
+                    value: message.value,
                     headers: message.headers,
                 })
 
@@ -93,11 +93,11 @@ app.post('/bookTrip', async (request, response) => {
     let return_data = {}
     return_data['route1']= "Carlow Route 3 Date"
 
-    response.setHeader('Content-Type', 'application/json');     // your JSON
+    res.setHeader('Content-Type', 'application/json');     // your JSON
     if(error){
-        response.send(JSON.stringify({ "Status": `Failure: ${error}` }))
+        res.send(JSON.stringify({ "Status": `Failure: ${error}` }))
     }
-    else response.send(JSON.stringify({ return_data }))
+    else res.send(JSON.stringify({ return_data }))
   });
 
 
@@ -130,14 +130,15 @@ app.post('/getBookedTrips', async (req, res)=> {
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 console.log({
-                    key: message.key.toString(),
-                    value: message.value.toString(),
+                    key: message.key,
+                    value: message.value,
                     headers: message.headers,
+                    message: message
                 })
             },
         })
 
-        await consumer.disconnect()
+        // await consumer.disconnect()
 
     }catch (e) {
 
@@ -252,11 +253,11 @@ app.post('/getRoutes', async (req, res)=> {
                     key: message.key.toString(),
                     value: message.value.toString(),
                     headers: message.headers,
-                })
+                }, "This is the message I have received back -----------------------")
             },
         })
 
-        await consumer.disconnect()
+        // await consumer.disconnect()
 
     }catch (e) {
 
