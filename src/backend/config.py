@@ -1,4 +1,4 @@
-from models.dynamodb import DynamoDB
+from models.dynamodb import DynamoDB, Region
 from const import ddb_regions
 
 
