@@ -12,7 +12,7 @@ def book_trip(user, route, start_date_time, end_date_time):
     trip = TripsTable.from_user_and_route(user, route)
     trip.start_date_time = start_date_time
     trip.end_date_time = end_date_time
-    
+
     trip.write()
 
     return trip.to_trip()
@@ -31,9 +31,9 @@ def get_current_route_capacity(route):
 @check_connection
 def get_routes(country, city=None, area=None, street=None):
     routes = TripsTable.get_routes(country, city, area, street)
-    
+
     return routes
-    
+
 
 @check_connection
 def get_user_trips(user):

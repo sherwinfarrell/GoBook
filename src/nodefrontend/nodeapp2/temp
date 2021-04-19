@@ -1,0 +1,107 @@
+<!-- //   function idleLogout() {
+  //         var t;
+  //         window.onload = resetTimer;
+  //         window.onmousemove = resetTimer;
+  //         window.onmousedown = resetTimer;  // catches touchscreen presses as well      
+  //         window.ontouchstart = resetTimer; // catches touchscreen swipes as well 
+  //         window.onclick = resetTimer;      // catches touchpad clicks as well
+  //         window.onkeydown = resetTimer;   
+  //         window.addEventListener('scroll', resetTimer, true); // improved; see comments
+
+  //         function yourFunction() {
+  //             // your function for too long inactivity goes here
+  //             // e.g. window.location.href = 'logout.php';
+  //             alert("New User Session is being generated")
+  //             let uuid = getNewID();
+  //             document.getElementById('sessionId').innerHTML = uuid;
+
+  //             localStorage.setItem('uuid', uuid);
+  //             idleLogout()
+
+  //         }
+
+  //         function resetTimer() {
+  //             clearTimeout(t);
+  //             t = setTimeout(yourFunction, 40000);  // time is in milliseconds
+  //         }
+  // }
+  // idleLogout();
+  
+
+
+  // window.onload = resetTimer;
+
+  // window.onload = function () {
+  //                         if (!('hasCodeRunBefore' in localStorage)){
+  //                           /** Your code here. **/
+  //                           console.log("First Time Here");
+  //                           let uuid= getNewID();
+  //                           document.getElementById('sessionId').innerHTML = uuid;
+                            
+  //                           localStorage.setItem('uuid', uuid);
+  //                           localStorage.setItem("hasCodeRunBefore", true);
+  //                       }
+  //                       else{
+  //                         console.log("Not First Time")
+
+  //                         document.getElementById('sessionId').innerHTML = localStorage.getItem("uuid");
+
+  //                       }
+  //                   }
+
+    // document.onmousemove = resetTimer;
+    // document.onkeypress = resetTimer;
+
+    // let a = document.getElementById('bookTrip').onClick(() => console.log("heelo"));
+    // // console.log(a);
+    // let sessionTimeout;
+
+
+    // function logout() {
+    //   alert("New User Session is being generated")
+    //   let uuid = getNewID();
+    //   document.getElementById('sessionId').innerHTML = uuid;
+
+    //   localStorage.setItem('uuid', uuid);
+    //   resetTimer()
+
+    // }
+
+    // function resetTimer() {
+    //   clearTimeout(sessionTimeout);
+    //   time = setTimeout(logout, 3000);
+    // } -->
+
+    
+<!-- 
+    function getNewID()
+    {
+        var d = new Date().getTime();
+        if (window.performance && typeof window.performance.now === "function")
+        {
+            d += performance.now();
+            ; // use high-precision timer if available
+        }
+        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c)
+        {
+            var r = (d + Math.random() * 16) % 16 | 0;
+            d = Math.floor(d / 16);
+            return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+        return uuid;
+    } -->
+
+    
+            <!-- <div class="form-group">
+              <label for="currentBookings">Booked Routes</label>
+              <select class="form-control" id="currentBookings">
+                <option>Wexford Route 1 21-04-201 to 21-04-2021</option>
+              </select>
+            </div> -->
+
+
+            // var bookedTrip = bookedTrip.split(" ");
+            // console.log(bookedTrip);
+  
+            // let city = bookedTrip[1];
+            // let route = bookedTrip[3]; 

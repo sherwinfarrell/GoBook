@@ -1,11 +1,9 @@
 from models.dynamodb import Region
 from collections import OrderedDict
 
-
 MAX_TRIPS_PER_ROUTE = 10
 
 ddb_local_host = 'http://localhost:'
-
 
 ddb_regions = {
     'Ireland': Region('eu-west-1', 'Ireland', '8000'),

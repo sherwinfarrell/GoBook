@@ -17,10 +17,11 @@ def run_local_db_containers():
         try:
             container = client.containers.get(region_name)
         except docker.errors.NotFound:
-            container = client.containers.run('amazon/dynamodb-local', ports={'8000/tcp': region.port}, name=region_name, detach=True)
-
+            container = client.containers.run('amazon/dynamodb-local',
+                                              ports={'8000/tcp': region.port},
+                                              name=region_name,
+                                              detach=True)
         containers.append(container)
-
     time.sleep(5)
 
 
@@ -34,9 +35,8 @@ def create_tables_in_all_regions():
                 TripsTable.create_table()
         except:
             print(region.name + ' failed')
-    
+
     TripsTable.change_region(ddb_config.regions[0])
 
 
 # def handle_db_disconnect():
-
