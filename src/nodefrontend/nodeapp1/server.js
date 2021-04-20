@@ -35,6 +35,10 @@ app.get('/which', (req, res) =>{
 //     res.writeHead(200, { 'content-type': 'text/html' })
 //     fs.createReadStream('index.html').pipe(res)
 // })
+const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
+consumer.connect()
+
+consumer.subscribe({ topic: 'GetBooking' }) 
 
 app.post('/bookTrip', async (req, res) => {
     console.log(req.body)
@@ -61,26 +65,24 @@ app.post('/bookTrip', async (req, res) => {
             { value: JSON.stringify(data) },
         ],  
         })  
-
         await producer.disconnect()
 
-        const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
-        await consumer.connect()
 
-        await consumer.subscribe({ topic: 'GetBooking' }) 
         
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 console.log({
                     key: message.key,
-                    value: message.value,
+                    value: message.value.toString(),
                     headers: message.headers,
                 })
+
+                console.log("I am here ..............................................")
 
             },
         })
 
-        await consumer.disconnect()
+        // await consumer.disconnect()
 
     }catch (e) {
 
@@ -99,6 +101,12 @@ app.post('/bookTrip', async (req, res) => {
     }
     else res.send(JSON.stringify({ return_data }))
   });
+
+
+const userBookingConsumer = kafkaClient.consumer({groupId: 'my-group-id' })
+userBookingConsumer.connect()
+
+userBookingConsumer.subscribe({ topic: 'GetUserBookings' })  
 
 
 app.post('/getBookedTrips', async (req, res)=> {
@@ -122,12 +130,9 @@ app.post('/getBookedTrips', async (req, res)=> {
 
         await producer.disconnect()
 
-        const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
-        await consumer.connect()
 
-        await consumer.subscribe({ topic: 'GetUserBookings' }) 
         
-        await consumer.run({
+        await userBookingConsumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 console.log({
                     key: message.key,
@@ -161,6 +166,12 @@ app.post('/getBookedTrips', async (req, res)=> {
 })
 
 
+
+const cancellationConsumer = kafkaClient.consumer({groupId: 'my-group-id' })
+cancellationConsumer.connect()
+
+cancellationConsumer.subscribe({ topic: 'GetCancellation' }) 
+
 app.post('/cancelTrip', async (req, res)=> {
     console.log(req.body)
     let trip_id = req.body['trip_id']
@@ -183,12 +194,9 @@ app.post('/cancelTrip', async (req, res)=> {
 
         await producer.disconnect()
 
-        const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
-        await consumer.connect()
 
-        await consumer.subscribe({ topic: 'GetCancellation' }) 
         
-        await consumer.run({
+        await cancellationConsumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 console.log({
                     key: message.key.toString(),
@@ -198,7 +206,7 @@ app.post('/cancelTrip', async (req, res)=> {
             },
         })
 
-        await consumer.disconnect()
+        // await cancellationConsumer.disconnect()
 
     }catch (e) {
 
@@ -216,7 +224,10 @@ app.post('/cancelTrip', async (req, res)=> {
     else res.send(JSON.stringify({ "Status": "Success" }))
 })
 
+const routesConsumer = kafkaClient.consumer({groupId: 'my-group-id' })
+routesConsumer.connect()
 
+routesConsumer.subscribe({ topic: 'GetRoutes' }) 
 app.post('/getRoutes', async (req, res)=> {
     console.log(req.body)
     // let country = req.body['country']
@@ -242,12 +253,9 @@ app.post('/getRoutes', async (req, res)=> {
 
         await producer.disconnect()
 
-        const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
-        await consumer.connect()
 
-        await consumer.subscribe({ topic: 'GetRoutes' }) 
         
-        await consumer.run({
+        await routesConsumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 console.log({
                     key: message.key.toString(),
