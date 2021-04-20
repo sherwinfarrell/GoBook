@@ -16,6 +16,11 @@ let kafkaClient = new Kafka({
     brokers: ['localhost:9092']
   })
 
+  const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
+  consumer.connect()
+  
+  consumer.subscribe({ topic: 'GetBooking' }) 
+
 // const client = new kafka.KafkaClient({kafkaHost: 'localhost:9092'});
 
 
@@ -35,10 +40,7 @@ app.get('/which', (req, res) =>{
 //     res.writeHead(200, { 'content-type': 'text/html' })
 //     fs.createReadStream('index.html').pipe(res)
 // })
-const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
-consumer.connect()
 
-consumer.subscribe({ topic: 'GetBooking' }) 
 
 app.post('/bookTrip', async (req, res) => {
     console.log(req.body)
@@ -47,13 +49,16 @@ app.post('/bookTrip', async (req, res) => {
     let route = req.body['route']
 
 
-    let error  = null
+    // let error  = null
     // 'start_date_time': null, 'end_date_time': null
     
     data = {'id':userid, 'data':{'user':userid,'route':route,'start_date_time': null, 'end_date_time': null }}
 
+    let return_result = {}
+    let trip_id  = null
 
     try{
+
         const producer = kafkaClient.producer()
 
         await producer.connect()
@@ -76,30 +81,50 @@ app.post('/bookTrip', async (req, res) => {
                     value: message.value.toString(),
                     headers: message.headers,
                 })
+                
+                let value = message.value.toString()
+                value = JSON.parse(value)
+                console.log(value)
+                if(userid.toString() == value['id']){
+                    console.log("This happened")
+                    trip_id = value['trip_id']
+                    return_result['route1']= "Carlow Route 3 Date"
+                    return_result['trip_id'] = trip_id
+                    if(trip_id){
+                        // res.sendStatus(200)
+                        res.setHeader('Content-Type', 'application/json');     // your JSON
 
+                        res.send(JSON.stringify({ return_result,"Status": "Success" }))
+                
+                    }
+                    else {
+                     res.send(JSON.stringify({ "Status": `Failure: Booking was unsuccessfull` }))
+                    }
+                    return
+                }
                 console.log("I am here ..............................................")
 
             },
         })
 
-        // await consumer.disconnect()
 
-    }catch (e) {
+    }catch (error) {
 
-        console.error(e);
+        console.error(error);
 
-        error= e
+        if(error){
+    
+            res.send(JSON.stringify({ "Status": `Failure: ${error}` }))
+        }
 
     }
 
-    let return_data = {}
-    return_data['route1']= "Carlow Route 3 Date"
-
-    res.setHeader('Content-Type', 'application/json');     // your JSON
-    if(error){
-        res.send(JSON.stringify({ "Status": `Failure: ${error}` }))
-    }
-    else res.send(JSON.stringify({ return_data }))
+    
+    
+   
+    
+   
+     
   });
 
 

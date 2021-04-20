@@ -214,6 +214,7 @@
         console.log(userid)
 
         console.log(selectedRoute);
+        
         if(userid){
         fetch("/bookTrip", {
             method: "POST", 
@@ -224,23 +225,43 @@
             route: selectedRoute
             })
           }).then(res => {
-            console.log("Request complete! response:", );
-            // console.log(res.json())
-            return res.json()
-          }).then(res=> {console.log(res)
 
+            console.log("Request complete! response:", );
+            console.log(res.status); // Will show you the status
+            if (!res.ok) {
+                console.log("There is in an Error!!")
+                throw new Error("HTTP status " + res.status);
+            }
+            
+            return res.json()
+
+          }).then(res=> {
+
+            console.log(res)
+            console.log(res.ok)
+            if(res['Status']!="Success"){
+              let error1 = document.getElementById('error')
+              error1.innerText = res['Status']
+            }
+            else{
             res = res['return_data']
             daySelect = document.getElementById('multiselect');
             Object.keys(res).forEach((key)=>{
-            daySelect.options[daySelect.options.length] = new Option( key + " " + res[key], key + " " + res[key] )
-            })
+            daySelect.options[daySelect.options.length] = new Option( key + " " + res[key], key + " " + res[key] )})}
 
+          }).catch((error) => {
 
-          })
+              console.log(error)
+              let error1 = document.getElementById('error')
+              error1.innerText = error
+
+            });
         }
         else{
+
           let error = document.getElementById('error')
           error.innerText = "Please Enter your User Id"
+
         }
       }
 
