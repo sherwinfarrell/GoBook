@@ -1,5 +1,6 @@
 from config import ddb_config
 
+from models.exceptions import RouteAlreadyBooked
 from storage.models.trips_table import TripsTable
 from storage.decorators import check_connection
 
@@ -12,6 +13,14 @@ def book_trip(user, route, start_date_time, end_date_time):
     trip = TripsTable.from_user_and_route(user, route)
     trip.start_date_time = start_date_time
     trip.end_date_time = end_date_time
+
+    try:
+        user_trips = get_user_trips(user)
+        for t in user_trips:
+            if t.route_id == route.route_id:
+                raise RouteAlreadyBooked
+    except RouteAlreadyBooked:
+        return None
 
     trip.write()
 

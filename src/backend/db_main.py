@@ -15,6 +15,6 @@ if __name__ == '__main__':
     user = User('1', 'john')
     route = Route('1', 'ire', 'dub', '8', 'lolz')
 
-    #trip_id = book_trip(user, route,  datetime.now(timezone.utc).isoformat(timespec='seconds'),  datetime.now(timezone.utc).isoformat(timespec='seconds'))
+    print(book_trip(user, route,  datetime.now(timezone.utc).isoformat(timespec='seconds'),  datetime.now(timezone.utc).isoformat(timespec='seconds')))
 
     
