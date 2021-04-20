@@ -204,10 +204,12 @@
 
       function bookTrip(a){
 
-        // var selectedCityIndex = document.getElementById("selectCity");
-        // var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
+        var selectedCityIndex = document.getElementById("selectCity");
+        var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
+        var selectedCountryIndex = document.getElementById("selectCountry");
+        var selectedCountry = selectedCountryIndex.options[selectedCountryIndex.selectedIndex].text;
         var selectedRouteIndex = document.getElementById("selectRoute");
-        var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].value;
+        var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].text;
         let useridinput = document.getElementById('userid')
         console.log(selectedRoute)
         userid = useridinput.value
@@ -222,7 +224,9 @@
 
             body: JSON.stringify({
             userid: userid,
-            route: selectedRoute
+            route: selectedRoute,
+            city: selectedCity,
+            country: selectedCountry
             })
           }).then(res => {
 
@@ -238,16 +242,17 @@
           }).then(res=> {
 
             console.log(res)
-            console.log(res.ok)
             if(res['Status']!="Success"){
               let error1 = document.getElementById('error')
               error1.innerText = res['Status']
             }
             else{
-            res = res['return_data']
+            res = res['return_result']
             daySelect = document.getElementById('multiselect');
-            Object.keys(res).forEach((key)=>{
-            daySelect.options[daySelect.options.length] = new Option( key + " " + res[key], key + " " + res[key] )})}
+            // Object.keys(res).forEach((key)=>{
+            daySelect.options[daySelect.options.length] = new Option( res['country']+","+res['city']+","+res['route'], res['trip_id'] )
+          // })
+          }
 
           }).catch((error) => {
 

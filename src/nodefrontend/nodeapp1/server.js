@@ -16,10 +16,7 @@ let kafkaClient = new Kafka({
     brokers: ['localhost:9092']
   })
 
-  const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
-  consumer.connect()
-  
-  consumer.subscribe({ topic: 'GetBooking' }) 
+
 
 // const client = new kafka.KafkaClient({kafkaHost: 'localhost:9092'});
 
@@ -47,6 +44,13 @@ app.post('/bookTrip', async (req, res) => {
 
     let userid = req.body['userid']
     let route = req.body['route']
+    let city = req.body['city']
+    let country = req.body['country']
+
+    const consumer = kafkaClient.consumer({groupId: 'my-group-id' })
+    consumer.connect()
+    
+    consumer.subscribe({ topic: 'GetBooking' }) 
 
 
     // let error  = null
@@ -55,7 +59,10 @@ app.post('/bookTrip', async (req, res) => {
     data = {'id':userid, 'data':{'user':userid,'route':route,'start_date_time': null, 'end_date_time': null }}
 
     let return_result = {}
+    return_result['route'] = route
     let trip_id  = null
+    res.setHeader('Content-Type', 'application/json');     // your JSON
+
 
     try{
 
@@ -88,11 +95,11 @@ app.post('/bookTrip', async (req, res) => {
                 if(userid.toString() == value['id']){
                     console.log("This happened")
                     trip_id = value['trip_id']
-                    return_result['route1']= "Carlow Route 3 Date"
                     return_result['trip_id'] = trip_id
+                    return_result['city'] = city
+                    return_result['country'] = country
                     if(trip_id){
                         // res.sendStatus(200)
-                        res.setHeader('Content-Type', 'application/json');     // your JSON
 
                         res.send(JSON.stringify({ return_result,"Status": "Success" }))
                 
@@ -100,7 +107,7 @@ app.post('/bookTrip', async (req, res) => {
                     else {
                      res.send(JSON.stringify({ "Status": `Failure: Booking was unsuccessfull` }))
                     }
-                    return
+                    consumer.disconnect()
                 }
                 console.log("I am here ..............................................")
 
@@ -117,14 +124,7 @@ app.post('/bookTrip', async (req, res) => {
             res.send(JSON.stringify({ "Status": `Failure: ${error}` }))
         }
 
-    }
-
-    
-    
-   
-    
-   
-     
+    }  
   });
 
 
@@ -167,6 +167,8 @@ app.post('/getBookedTrips', async (req, res)=> {
                 })
             },
         })
+
+        userBookingConsumer.pause()
 
         // await consumer.disconnect()
 
@@ -290,7 +292,7 @@ app.post('/getRoutes', async (req, res)=> {
             },
         })
 
-        // await consumer.disconnect()
+        routesConsumer.pause()
 
     }catch (e) {
 
