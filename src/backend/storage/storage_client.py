@@ -22,7 +22,10 @@ def book_trip(user, route, start_date_time, end_date_time):
     except RouteAlreadyBooked:
         return None
 
-    trip.write()
+    try:
+        trip.write()
+    except Exception():
+        return None
 
     return trip.to_trip()
 
@@ -60,3 +63,7 @@ def cancel_trip(trip):
         return
 
     TripsTable.remove_trip_by_id(trip.trip_id)
+
+
+def truncate_table():
+    TripsTable.truncate_table()

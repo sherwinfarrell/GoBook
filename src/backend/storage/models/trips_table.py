@@ -111,6 +111,27 @@ class TripsTable(Model):
         routes = TripsTable.country_city_gsi.get_routes(TripsTable, country, city, area, street)
 
         return routes
+
+
+    @staticmethod
+    def truncate_table():
+        trips = []
+        data = TripsTable.scan()
+
+        for d in data:
+            trips.append(d)
+
+        last_evaluated_key = data.last_evaluated_key
+
+        while last_evaluated_key:
+            data = TripsTable.scan(last_evaluated_key=last_evaluated_key)
+
+            for d in data:
+                trips.append(d)
+            last_evaluated_key = data.last_evaluated_key
+
+        for t in trips:
+            t.delete()
         
 
     @classmethod
