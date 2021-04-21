@@ -64,6 +64,9 @@ def cancel_trip(trip):
 
     TripsTable.remove_trip_by_id(trip.trip_id)
 
-
+	
+@check_connection
 def truncate_table():
+	print('cleaning table')
     TripsTable.truncate_table()
+	print('finished cleaning')
