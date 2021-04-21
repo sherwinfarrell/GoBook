@@ -37,6 +37,8 @@ class Consumer(threading.Thread):
                                  auto_offset_reset='latest',
                                  enable_auto_commit=True,
                                  consumer_timeout_ms=1000)
+        print(self.topic)
+        print("It has created a consumer")
         # consumer.poll()
         # consumer.seek_to_end()
 
@@ -47,6 +49,7 @@ class Consumer(threading.Thread):
                 data = {}
                 print(message)
                 x = json.loads(message.value.decode())
+                
 
                 if self.topic == "Routes":
                     data["result"] = get_routes(x["data"]["country"],
@@ -57,7 +60,7 @@ class Consumer(threading.Thread):
                 elif self.topic == "Booking":
                     print("Sending Data: ", x["data"]["user"], "  ",x["data"]["route"] )
                     user = User(x["data"]["user"], "test")
-                    route = Route( x["data"]["route"],"test", "test", "test", "test")
+                    route = Route( x["data"]["route"],x["data"]["country"], x["data"]["city"], "test", "test")
                     trip = book_trip(
                         user,
                         route,
@@ -82,8 +85,15 @@ class Consumer(threading.Thread):
 
                 elif self.topic == "UserBookings":
                     print("Sending Data  -----------", x["data"]["user"])
-                    data["result"] = get_user_trips( User(x["data"]["user"], "test"))
+                    trips = get_user_trips( User(x["data"]["user"], "test"))
                     data["id"] = x["id"]
+                    print(trips)
+                    data["trips"]= {}
+                    for i, trip in enumerate(trips):
+                        print(trip.trip_id)
+                        print("id is ", i)
+                        data["trips"][ trip.trip_id] =trip.country + "," + trip.city +"," + trip.route_id
+                        print(data)
                     prod.send("GetUserBookings", value=data)
 
 

@@ -4,6 +4,7 @@ import json
 from json import dumps, loads
 from kafka import KafkaProducer, KafkaConsumer
 import logging
+import time
 
 
 import asyncio
@@ -78,7 +79,7 @@ def bookTrip():
                     return_result['country'] = selectedCountry
                     break
                 print(event_data, flush=True)
-            
+            time.sleep(5)
             
         except Exception as e:
             print("There was an error " + str(e))
@@ -169,4 +170,4 @@ def getRoutes():
 
 
 if __name__ == '__main__':
-    app.run('0.0.0.0',debug=True, port=5001,threaded = True)
+    app.run('0.0.0.0',port=5001,threaded = True)
