@@ -1,24 +1,24 @@
-version: '2'
+version: "2"
 services:
   zookeeper:
     image: wurstmeister/zookeeper:3.4.6
     ports:
-     - "2181:2181"
+      - "2181:2181"
   kafka:
     image: wurstmeister/kafka
     ports:
-     - "9092:9092"
+      - "9092:9092"
     environment:
       KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka_kafka_1:9093,OUTSIDE://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
       KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,OUTSIDE://0.0.0.0:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
       KAFKA_ZOOKEEPER_CONNECT: kafka_zookeeper_1:2181
-      KAFKA_CREATE_TOPICS: "Booking:3:3,GetBooking:3:3,Cancellation:3:3,GetCancellation:3:3,UserBookings:3:3,GetUserBookings:3:3,Routes:3:3,GetRoutes:3:3"
+      KAFKA_CREATE_TOPICS: "Booking:1:1,GetBooking:1:1,Cancellation:1:1,GetCancellation:1:1,UserBookings:1:1,GetUserBookings:1:1,Routes:1:1,GetRoutes:1:1"
     volumes:
-     - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
   default:
-      external:
-          name: distNet
+    external:
+      name: distNet

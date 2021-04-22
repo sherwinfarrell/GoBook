@@ -16,6 +16,7 @@ import threading, time
 app = Flask(__name__)
 
 TOPIC = "first"
+
 # producerG = None
 prod = KafkaProducer(bootstrap_servers=['localhost:9092'],
                      value_serializer=lambda x: json.dumps(x).encode('utf-8'))
@@ -23,8 +24,33 @@ prod = KafkaProducer(bootstrap_servers=['localhost:9092'],
 client = KafkaClient(hosts="localhost:9092", )
 
 
+def singleton(class_):
+    instances = {}
+
+    def getinstance(*args, **kwargs):
+        if class_ not in instances:
+            instances[class_] = class_(*args, **kwargs)
+        return instances[class_]
+
+    return getinstance
+
+
+@singleton
+class Handler():
+    def __init__(self) -> None:
+        getRoute = Consumer(topic="Routes")
+        bookTrip = Consumer(topic="Booking")
+        getUserTrips = Consumer(topic="UserBookings")
+        cancelTrip = Consumer(topic="Cancellation")
+        getRoute.start()
+        bookTrip.start()
+        getUserTrips.start()
+        cancelTrip.start()
+
+
 class Consumer(threading.Thread):
     def __init__(self, topic):
+        print("creating thred for topic : " + topic)
         self.topic = topic
         threading.Thread.__init__(self)
         self.stop_event = threading.Event()
@@ -33,12 +59,11 @@ class Consumer(threading.Thread):
         self.stop_event.set()
 
     def run(self):
-        consumer = KafkaConsumer(self.topic, bootstrap_servers='localhost:9092',
+        consumer = KafkaConsumer(self.topic,
+                                 bootstrap_servers='localhost:9092',
                                  auto_offset_reset='latest',
                                  enable_auto_commit=True,
                                  consumer_timeout_ms=1000)
-        print(self.topic)
-        print("It has created a consumer")
         # consumer.poll()
         # consumer.seek_to_end()
 
@@ -49,79 +74,54 @@ class Consumer(threading.Thread):
                 data = {}
                 print(message)
                 x = json.loads(message.value.decode())
-                
 
                 if self.topic == "Routes":
-                    # data["result"] = get_routes(x["data"]["country"],
-                                                # x["data"]["city"], "test", "test")
-                    print("The Data that is recieved is " + x)
-                    # prod.send("GetRoutes", value=data)
+                    data["result"] = get_routes(x["data"]["country"],
+                                                x["data"]["city"], "test",
+                                                "test")
+                    data["id"] = x["id"]
+                    prod.send("GetRoutes", value=data)
 
                 elif self.topic == "Booking":
-                    for i in x:
-                        print(i,x[i])
-                    # print("Sending Data: " + x["data"]["user"] + "  " + x["data"]["route"] + " " +x["data"]["city"])
+                    print("Sending Data: ", x["data"]["user"], "  ",
+                          x["data"]["route"])
                     user = User(x["data"]["user"], "test")
-                    
-                    route = Route( x["data"]["route"],x["data"]["country"], x["data"]["city"], "test", "test")
-                    print()
-                    print("The route object that was just created is *********** \n" )
-                    print(route.to_string())
-                    print()
-                    print("The route object that was just created is \n")
-                    print(user.user_id)
-                    print(user.username)
-
-
-                    trip = book_trip(
-                        user,
-                        route,
-                        "test", "test"
-                    )
-                    
-                    
+                    route = Route(x["data"]["route"], "test", "test", "test",
+                                  "test")
+                    trip = book_trip(user, route, "test", "test")
                     data["id"] = x["id"]
-                    if(trip):
-                        print("The Trip that we got back from calling book_trip is " )
-                        print(trip.to_string())
-                        print("This is the trip id "+ trip.trip_id)
-                        print("This is the trip book_date_time "+ str(trip.book_date_time))
-                        print("This is the trip start_date_time "+ str(trip.start_date_time))
-                        print("This is the trip end_date_time "+ str(trip.end_date_time))
-                        print("This is the trip route_id "+ trip.route_id)
-                        print("This is the trip country "+ trip.country)
-                        print("This is the trip city "+ trip.city)
-                        print("This is the trip area "+ trip.area)
-                        print("This is the trip street "+ trip.street)
-                        print("This is the trip user_id "+ trip.user_id)
-                        print("This is the trip username "+ trip.username)
-                        data["trip_id"] = trip.trip_id
-                        
-                    print("The data to be sent back is ------------> ", data)
-                    prod.send("GetBooking", value=data)
+                    print("This is the trip id " + trip.trip_id)
+                    print("This is the trip book_date_time " +
+                          str(trip.book_date_time))
+                    print("This is the trip start_date_time " +
+                          str(trip.start_date_time))
+                    print("This is the trip end_date_time " +
+                          str(trip.end_date_time))
+                    print("This is the trip route_id " + trip.route_id)
+                    print("This is the trip country " + trip.country)
+                    print("This is the trip city " + trip.city)
+                    print("This is the trip area " + trip.area)
+                    print("This is the trip street " + trip.street)
+                    print("This is the trip user_id " + trip.user_id)
+                    print("This is the trip username " + trip.username)
+                    data["trip_id"] = trip.trip_id
 
+                    prod.send("GetBooking", value=data)
 
                 elif self.topic == "UserBookings":
                     print("Sending Data  -----------", x["data"]["user"])
-                    
-                    trips = get_user_trips( User(x["data"]["user"], "test"))
+                    data["result"] = get_user_trips(
+                        User(x["data"]["user"], "test"))
                     data["id"] = x["id"]
-                    print(trips)
-                    data["trips"]= {}
-                    for i, trip in enumerate(trips):
-                        print(trip.trip_id)
-                        print("id is ", i)
-                        data["trips"][ trip.trip_id] =trip.country + "," + trip.city +"," + trip.route_id
-                        print(data)
                     prod.send("GetUserBookings", value=data)
 
-
                 elif self.topic == "cancel":
-                    trip = Trip(x["data"]["tripid"], "test", "test", "test", "test", "test", "test", "test", "test", "test", "test")
-                    data["result"] = cancel_trip(trip )
+                    trip = Trip(x["data"]["tripid"], "test", "test", "test",
+                                "test", "test", "test", "test", "test", "test",
+                                "test")
+                    data["result"] = cancel_trip(trip)
                     data["id"] = x["id"]
                     prod.send("GetCancellation", value=data)
-
 
                 if self.stop_event.is_set():
                     break
@@ -182,13 +182,8 @@ if __name__ == '__main__':
     # client = KafkaClient(hosts="localhost:9092")
     #    KAFKA_CREATE_TOPICS: "Booking:1:3,GetBooking:1:3,Cancellation:1:3,GetCancellation:1:3,
     # UserBookings:1:3,GetUserBookings:1:3,Routes:1:3,GetRoutes:1:3"
+    helper = Handler()
 
-    getRoute = Consumer(topic="Routes")
-    bookTrip = Consumer(topic="Booking")
-    getUserTrips = Consumer(topic="UserBookings")
-    cancelTrip = Consumer(topic="Cancellation")
-    getRoute.start()
-    bookTrip.start()
-    getUserTrips.start()
-    cancelTrip.start()
-    app.run(debug=True)
+    print(helper)
+
+    app.run(debug=False)
