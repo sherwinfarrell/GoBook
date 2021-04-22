@@ -21,7 +21,7 @@
               <button onClick="getBookedTrips(this.id)" id="gettrips" class="btn btn-outline-primary">Get Trips</button>
 
               <div class="form-group">
-                <label for="selectCountry">Example select</label>
+                <label for="selectCountry">Selec Country</label>
                 <select class="form-control" id="selectCountry" onchange="getCities(this.id)">
                   <option>Ireland</option>
                   <option>UK</option>
@@ -32,7 +32,7 @@
               </div>
 
               <div class="form-group">
-                <label for="selectCity">Example select</label>
+                <label for="selectCity">Select City</label>
                 <select class="form-control" id="selectCity" onchange="getRoutes(this.id)">
                   <option>Dublin</option>
                   <option>Carlow</option>
@@ -153,14 +153,21 @@
                     // res = res['return_data']
                     
                     routeSelect = document.getElementById('selectRoute');
+                    console.log(selectedCity)
                     Object.keys(Array.from(Array(5).keys())).forEach((key)=>{
-                      routeSelect.options[routeSelect.options.length] = new Option( "Route:"+key, selectedCity+key )
+                      let routeKey  = parseInt(key) +1
+                      routeSelect.options[routeSelect.options.length] = new Option( "Route:"+(routeKey), selectedCity+(routeKey) )
                   })
                 })
 
               }
 
       function getBookedTrips(a){
+
+          let  bookedRoutes = document.getElementById('multiselect');
+          bookedRoutes.innerHTML = "";
+          let error1 = document.getElementById('error')
+          error1.innerText =""
           useridinput = document.getElementById('userid')
           userid = useridinput.value
           console.log(userid)
@@ -173,7 +180,7 @@
             headers: new Headers({'content-type': 'application/json'}),
 
             body: JSON.stringify({
-              user_id: userid
+              userid: userid
             })
           }).then(res => {
             console.log("Request complete! response:", );
@@ -182,12 +189,20 @@
           }).then(res=> {
             // let str = JSON.stringify(res);
             console.log(res);
-            res = res['return_data']
-            
-            daySelect = document.getElementById('multiselect');
-            Object.keys(res).forEach((key)=>{
-            daySelect.options[daySelect.options.length] = new Option( key + " " + res[key], key + " " + res[key] )
-          })
+            if(res['Status']!="Success"){
+              let error1 = document.getElementById('error')
+              error1.innerText = res['Status']
+            }
+            else{
+              res = res['return_result']
+              
+              daySelect = document.getElementById('multiselect');
+              Object.keys(res).forEach((key)=>{
+               let splitTripValues =  res[key].split(',')
+
+              daySelect.options[daySelect.options.length] = new Option( splitTripValues[0] + " " + splitTripValues[1] + " " +splitTripValues[2], key )
+            })
+          }
         })
         
       }
@@ -204,13 +219,16 @@
 
       function bookTrip(a){
 
+        let error1 = document.getElementById('error')
+        error1.innerText =""
         var selectedCityIndex = document.getElementById("selectCity");
         var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
         var selectedCountryIndex = document.getElementById("selectCountry");
         var selectedCountry = selectedCountryIndex.options[selectedCountryIndex.selectedIndex].text;
         var selectedRouteIndex = document.getElementById("selectRoute");
-        var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].text;
+        var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].value;
         let useridinput = document.getElementById('userid')
+
         console.log(selectedRoute)
         userid = useridinput.value
         console.log(userid)
@@ -243,12 +261,10 @@
 
             console.log(res)
             if(res['Status']!="Success"){
-              console.log("It was not a success")
               let error1 = document.getElementById('error')
               error1.innerText = res['Status']
             }
             else{
-            console.log("It was a success")
             res = res['return_result']
             daySelect = document.getElementById('multiselect');
             // Object.keys(res).forEach((key)=>{
@@ -301,7 +317,7 @@
               res = res['Status']
               if(res == "Success"){
                 console.log("Deleting the booking as the result was a success")
-              daySelect = document.getElementById('multiselect');
+                daySelect = document.getElementById('multiselect');
               for (var i=0; i<daySelect.length; i++) {  
                   if (daySelect.options[i].value == bookedTrip){
                       daySelect.remove(i);}

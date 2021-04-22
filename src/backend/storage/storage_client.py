@@ -61,8 +61,12 @@ def get_user_trips(user):
 def cancel_trip(trip):
     if not trip:
         return
-
-    TripsTable.remove_trip_by_id(trip.trip_id)
+    try:
+        TripsTable.remove_trip_by_id(trip.trip_id)
+    except:
+        return False
+    finally:
+        return True
 
 
 @check_connection
