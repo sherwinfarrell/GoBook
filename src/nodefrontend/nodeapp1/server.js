@@ -50,10 +50,7 @@ app.post('/bookTrip', async (req, res) => {
     let country = req.body['country']
 
 
-    const consumer = kafkaClient.consumer({groupId: 'my-group-id',     readUncommitted: true })
-    await consumer.connect()
-        
-    await consumer.subscribe({ topic: 'GetBooking', fromBeginning: false }) 
+    
 
     // let error  = null
     // 'start_date_time': null, 'end_date_time': null
@@ -69,7 +66,10 @@ app.post('/bookTrip', async (req, res) => {
     try{
 
 
-
+        const consumer = kafkaClient.consumer({groupId: 'my-group-id',     readUncommitted: true })
+        await consumer.connect()
+            
+        await consumer.subscribe({ topic: 'GetBooking', fromBeginning: false }) 
 
         const producer = kafkaClient.producer()
         await producer.connect()
@@ -98,15 +98,21 @@ app.post('/bookTrip', async (req, res) => {
                 console.log(value)
                 if(userid.toString() == value['id']){
                     console.log("This happened")
+                    console.log("Just checking the data to see if we got aything back ", value)
+                    if(value['trip_id']){
+
+                    console.log("Trips id is ---------------------> is still there ? whaaaa")
                     trip_id = value['trip_id']
                     return_result['trip_id'] = trip_id
                     return_result['city'] = city
                     return_result['country'] = country
 
-                    if(trip_id){
+                  
                         res.send(JSON.stringify({ return_result,"Status": "Success" }))
                     }
                     else {
+                        console.log("Trips id is ---------------------> None    ")
+
                      res.send(JSON.stringify({ "Status": `Failure: Booking was unsuccessfull` }))
                     }
                     consumer.disconnect()
@@ -170,7 +176,7 @@ app.post('/getBookedTrips', async (req, res)=> {
         await userBookingConsumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 console.log({
-                    key: message.key,
+                    key: message,
                     value: message.value,
                     headers: message.headers,
                     message: message
@@ -179,16 +185,22 @@ app.post('/getBookedTrips', async (req, res)=> {
                 let value = message.value.toString()
                 value = JSON.parse(value)
                 console.log(value)
-                if(userid.toString() == value['id']){
+                if(userid.toString() == value['id'] && value['trips']){
                     console.log("This happened")
                     console.log(value)
+                    
                     trips = value['trips']
-                    if(Object.keys(trips).length !== 0){
-                    Object.keys(trips).forEach((tripKey)=>{
-                        return_result[key] = trips[key]
-                    })                        
-      
+                    console.log("These are the trips!!!")
+                    console.log(trips)
+                    // if(Object.keys(trips).length !== 0){
+                    // Object.keys(trips).forEach((tripKey)=>{
+                        
+                    // })       
+                    for(var trip in trips){
+                        return_result[trip] = trips[trip]
+                    }                 
 
+                        console.log("The trips in the return result are ", return_result)
                         res.send(JSON.stringify({ return_result,"Status": "Success" }))
 
                     }
@@ -197,7 +209,7 @@ app.post('/getBookedTrips', async (req, res)=> {
                     }
                     userBookingConsumer.disconnect()
 
-                }
+                
                 console.log("I am here ..............................................")
             },
         })

@@ -162,6 +162,8 @@
               }
 
       function getBookedTrips(a){
+          let error1 = document.getElementById('error')
+          error1.innerText =""
           useridinput = document.getElementById('userid')
           userid = useridinput.value
           console.log(userid)
@@ -213,6 +215,8 @@
 
       function bookTrip(a){
 
+        let error1 = document.getElementById('error')
+        error1.innerText =""
         var selectedCityIndex = document.getElementById("selectCity");
         var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
         var selectedCountryIndex = document.getElementById("selectCountry");

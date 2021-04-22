@@ -66,20 +66,24 @@ class Consumer(threading.Thread):
                         route,
                         "test", "test"
                     )
+                    print(trip)
+                    
                     data["id"] = x["id"]
-                    print("This is the trip id "+ trip.trip_id)
-                    print("This is the trip book_date_time "+ str(trip.book_date_time))
-                    print("This is the trip start_date_time "+ str(trip.start_date_time))
-                    print("This is the trip end_date_time "+ str(trip.end_date_time))
-                    print("This is the trip route_id "+ trip.route_id)
-                    print("This is the trip country "+ trip.country)
-                    print("This is the trip city "+ trip.city)
-                    print("This is the trip area "+ trip.area)
-                    print("This is the trip street "+ trip.street)
-                    print("This is the trip user_id "+ trip.user_id)
-                    print("This is the trip username "+ trip.username)
-                    data["trip_id"] = trip.trip_id
-                
+                    if(trip):
+                        print("This is the trip id "+ trip.trip_id)
+                        print("This is the trip book_date_time "+ str(trip.book_date_time))
+                        print("This is the trip start_date_time "+ str(trip.start_date_time))
+                        print("This is the trip end_date_time "+ str(trip.end_date_time))
+                        print("This is the trip route_id "+ trip.route_id)
+                        print("This is the trip country "+ trip.country)
+                        print("This is the trip city "+ trip.city)
+                        print("This is the trip area "+ trip.area)
+                        print("This is the trip street "+ trip.street)
+                        print("This is the trip user_id "+ trip.user_id)
+                        print("This is the trip username "+ trip.username)
+                        data["trip_id"] = trip.trip_id
+                        
+                    print("The data to be sent back is ------------> ", data)
                     prod.send("GetBooking", value=data)
 
 
