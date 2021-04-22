@@ -199,5 +199,8 @@ if __name__ == '__main__':
     bookTrip.start()
     getUserTrips.start()
     cancelTrip.start()
+<<<<<<< HEAD
 
+=======
+>>>>>>> cc4e72639ff5ee7a6bf2f3007627407fe123d393
     app.run(debug=False)
