@@ -153,6 +153,7 @@
                     // res = res['return_data']
                     
                     routeSelect = document.getElementById('selectRoute');
+                    console.log(selectedCity)
                     Object.keys(Array.from(Array(5).keys())).forEach((key)=>{
                       let routeKey  = parseInt(key) +1
                       routeSelect.options[routeSelect.options.length] = new Option( "Route:"+(routeKey), selectedCity+(routeKey) )
@@ -162,6 +163,9 @@
               }
 
       function getBookedTrips(a){
+
+          let  bookedRoutes = document.getElementById('multiselect');
+          bookedRoutes.innerHTML = "";
           let error1 = document.getElementById('error')
           error1.innerText =""
           useridinput = document.getElementById('userid')
@@ -222,8 +226,9 @@
         var selectedCountryIndex = document.getElementById("selectCountry");
         var selectedCountry = selectedCountryIndex.options[selectedCountryIndex.selectedIndex].text;
         var selectedRouteIndex = document.getElementById("selectRoute");
-        var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].text;
+        var selectedRoute = selectedRouteIndex.options[selectedRouteIndex.selectedIndex].value;
         let useridinput = document.getElementById('userid')
+
         console.log(selectedRoute)
         userid = useridinput.value
         console.log(userid)

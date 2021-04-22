@@ -78,11 +78,12 @@ class Consumer(threading.Thread):
                         route,
                         "test", "test"
                     )
-                    print("The Trip that we got back from calling book_trip is " )
-                    print(trip.to_string())
+                    
                     
                     data["id"] = x["id"]
                     if(trip):
+                        print("The Trip that we got back from calling book_trip is " )
+                        print(trip.to_string())
                         print("This is the trip id "+ trip.trip_id)
                         print("This is the trip book_date_time "+ str(trip.book_date_time))
                         print("This is the trip start_date_time "+ str(trip.start_date_time))
@@ -102,6 +103,7 @@ class Consumer(threading.Thread):
 
                 elif self.topic == "UserBookings":
                     print("Sending Data  -----------", x["data"]["user"])
+                    
                     trips = get_user_trips( User(x["data"]["user"], "test"))
                     data["id"] = x["id"]
                     print(trips)
