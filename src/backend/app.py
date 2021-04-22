@@ -52,21 +52,34 @@ class Consumer(threading.Thread):
                 
 
                 if self.topic == "Routes":
-                    data["result"] = get_routes(x["data"]["country"],
-                                                x["data"]["city"], "test", "test")
-                    data["id"] = x["id"]
-                    prod.send("GetRoutes", value=data)
+                    # data["result"] = get_routes(x["data"]["country"],
+                                                # x["data"]["city"], "test", "test")
+                    print("The Data that is recieved is " + x)
+                    # prod.send("GetRoutes", value=data)
 
                 elif self.topic == "Booking":
-                    print("Sending Data: ", x["data"]["user"], "  ",x["data"]["route"] )
+                    for i in x:
+                        print(i,x[i])
+                    # print("Sending Data: " + x["data"]["user"] + "  " + x["data"]["route"] + " " +x["data"]["city"])
                     user = User(x["data"]["user"], "test")
+                    
                     route = Route( x["data"]["route"],x["data"]["country"], x["data"]["city"], "test", "test")
+                    print()
+                    print("The route object that was just created is *********** \n" )
+                    print(route.to_string())
+                    print()
+                    print("The route object that was just created is \n")
+                    print(user.user_id)
+                    print(user.username)
+
+
                     trip = book_trip(
                         user,
                         route,
                         "test", "test"
                     )
-                    print(trip)
+                    print("The Trip that we got back from calling book_trip is " )
+                    print(trip.to_string())
                     
                     data["id"] = x["id"]
                     if(trip):

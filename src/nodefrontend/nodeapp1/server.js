@@ -229,10 +229,7 @@ app.post('/getBookedTrips', async (req, res)=> {
 
 
 
-const cancellationConsumer = kafkaClient.consumer({groupId: 'my-group-id' })
-cancellationConsumer.connect()
 
-cancellationConsumer.subscribe({ topic: 'GetCancellation' }) 
 
 app.post('/cancelTrip', async (req, res)=> {
     console.log(req.body)
@@ -242,8 +239,12 @@ app.post('/cancelTrip', async (req, res)=> {
     data = { 'id': userid, 'data': {'trip_id': trip_id}}
     let error = null
     try{
-        const producer = kafkaClient.producer()
 
+        const cancellationConsumer = kafkaClient.consumer({groupId: 'my-group-id' })
+        cancellationConsumer.connect()
+        cancellationConsumer.subscribe({ topic: 'GetCancellation' }) 
+
+        const producer = kafkaClient.producer()
         await producer.connect()
         await producer.send({
         topic: 'Cancellation',
@@ -268,7 +269,7 @@ app.post('/cancelTrip', async (req, res)=> {
             },
         })
 
-        // await cancellationConsumer.disconnect()
+        await cancellationConsumer.disconnect()
 
     }catch (e) {
 
@@ -286,13 +287,9 @@ app.post('/cancelTrip', async (req, res)=> {
     else res.send(JSON.stringify({ "Status": "Success" }))
 })
 
-const routesConsumer = kafkaClient.consumer({groupId: 'my-group-id' })
-routesConsumer.connect()
 
-routesConsumer.subscribe({ topic: 'GetRoutes' }) 
 app.post('/getRoutes', async (req, res)=> {
     console.log(req.body)
-    // let country = req.body['country']
     let city = req.body['city']
     let userid = req.body['userid']
 
@@ -300,42 +297,31 @@ app.post('/getRoutes', async (req, res)=> {
     data = {'id': userid, 'data': {'country':'Ireland', 'city': city}}
 
     let error = null
-    try{
-        const producer = kafkaClient.producer()
+    // try{
+    //     // const routesConsumer = kafkaClient.consumer({groupId: 'my-group-id' })
+    //     // routesConsumer.connect()
 
-        await producer.connect()
-        await producer.send({
-        topic: 'Routes',
-        acks: -1,
-        timeout: 30000,
-        messages: [
-            { value: JSON.stringify(data)},
-        ],  
-        })  
+    //     const producer = kafkaClient.producer()
 
-        await producer.disconnect()
+    //     await producer.connect()
+    //     await producer.send({
+    //     topic: 'Routes',
+    //     acks: -1,
+    //     timeout: 30000,
+    //     messages: [
+    //         { value: JSON.stringify(data)},
+    //     ],  
+    //     })  
 
+    //     await producer.disconnect()
 
-        
-        await routesConsumer.run({
-            eachMessage: async ({ topic, partition, message }) => {
-                console.log({
-                    key: message.key.toString(),
-                    value: message.value.toString(),
-                    headers: message.headers,
-                }, "This is the message I have received back -----------------------")
-            },
-        })
+    // }catch (e) {
 
-        routesConsumer.pause()
+    //     console.error(e);
 
-    }catch (e) {
+    //     error= e
 
-        console.error(e);
-
-        error= e
-
-    }
+    // }
 
     res.setHeader('Content-Type', 'application/json');     // your JSON
 
