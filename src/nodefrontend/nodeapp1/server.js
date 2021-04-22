@@ -185,6 +185,11 @@ app.post('/getBookedTrips', async (req, res)=> {
                 let value = message.value.toString()
                 value = JSON.parse(value)
                 console.log(value)
+                
+                console.log("This is the value",value)
+                if(value['trips']){
+                    console.log("Trips exist")
+                }
                 if(userid.toString() == value['id'] && value['trips']){
                     console.log("This happened")
                     console.log(value)
@@ -192,10 +197,6 @@ app.post('/getBookedTrips', async (req, res)=> {
                     trips = value['trips']
                     console.log("These are the trips!!!")
                     console.log(trips)
-                    // if(Object.keys(trips).length !== 0){
-                    // Object.keys(trips).forEach((tripKey)=>{
-                        
-                    // })       
                     for(var trip in trips){
                         return_result[trip] = trips[trip]
                     }                 

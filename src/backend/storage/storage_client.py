@@ -61,12 +61,16 @@ def get_user_trips(user):
 def cancel_trip(trip):
     if not trip:
         return
-
-    TripsTable.remove_trip_by_id(trip.trip_id)
+    try: 
+        TripsTable.remove_trip_by_id(trip.trip_id)
+    except:
+        return False
+    finally:
+        return True
 
 	
 @check_connection
 def truncate_table():
-	print('cleaning table')
+    print('cleaning table')
     TripsTable.truncate_table()
-	print('finished cleaning')
+    print('finished cleaning')

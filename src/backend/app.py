@@ -16,6 +16,7 @@ import threading, time
 app = Flask(__name__)
 
 TOPIC = "first"
+count = 0 
 # producerG = None
 prod = KafkaProducer(bootstrap_servers=['localhost:9092'],
                      value_serializer=lambda x: json.dumps(x).encode('utf-8'))
@@ -28,6 +29,7 @@ class Consumer(threading.Thread):
         self.topic = topic
         threading.Thread.__init__(self)
         self.stop_event = threading.Event()
+        self.count = 0
 
     def stop(self):
         self.stop_event.set()
@@ -36,7 +38,9 @@ class Consumer(threading.Thread):
         consumer = KafkaConsumer(self.topic, bootstrap_servers='localhost:9092',
                                  auto_offset_reset='latest',
                                  enable_auto_commit=True,
+                                 group_id="my-group-id",
                                  consumer_timeout_ms=1000)
+        consumer.commit()
         print(self.topic)
         print("It has created a consumer")
         # consumer.poll()
@@ -58,8 +62,11 @@ class Consumer(threading.Thread):
                     # prod.send("GetRoutes", value=data)
 
                 elif self.topic == "Booking":
+                    self.count = self.count +1
+                    print(self.count)
                     for i in x:
                         print(i,x[i])
+
                     # print("Sending Data: " + x["data"]["user"] + "  " + x["data"]["route"] + " " +x["data"]["city"])
                     user = User(x["data"]["user"], "test")
                     
@@ -102,24 +109,34 @@ class Consumer(threading.Thread):
 
 
                 elif self.topic == "UserBookings":
-                    print("Sending Data  -----------", x["data"]["user"])
-                    
+                    print("Sending Data  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", x["data"]["user"])
+
                     trips = get_user_trips( User(x["data"]["user"], "test"))
                     data["id"] = x["id"]
-                    print(trips)
+
+                    # print("The Trips that I got back is ********************************")
+                    # print(trips)
                     data["trips"]= {}
                     for i, trip in enumerate(trips):
                         print(trip.trip_id)
-                        print("id is ", i)
+                        # print("id is ", i)
                         data["trips"][ trip.trip_id] =trip.country + "," + trip.city +"," + trip.route_id
-                        print(data)
+                        print(trip)
+                    print("Data that is being sent back is **************************************")
+                    print(data)
+                    
                     prod.send("GetUserBookings", value=data)
 
 
                 elif self.topic == "cancel":
                     trip = Trip(x["data"]["tripid"], "test", "test", "test", "test", "test", "test", "test", "test", "test", "test")
-                    data["result"] = cancel_trip(trip )
+                    is_cancelled = cancel_trip(trip )
                     data["id"] = x["id"]
+                    print(is_cancelled)
+                    if is_cancelled:
+                        data['is_cancelled'] = is_cancelled
+                    print("Data that is being sent back is ************************************************************")
+                    print(data)
                     prod.send("GetCancellation", value=data)
 
 
