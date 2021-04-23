@@ -78,7 +78,6 @@ def cancel_trip(trip):
     
     return 'done'
 
-	
 @check_connection
 def truncate_table():
     print('cleaning table')
