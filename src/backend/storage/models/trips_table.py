@@ -99,8 +99,10 @@ class TripsTable(Model):
         if not trip_id:
             return
 
-        trip = TripsTable.get_trip_by_id(trip_id).to_trip()
+        trip = TripsTable.get(trip_id)
         trip.delete()
+
+        return "done"
 
 
     @staticmethod

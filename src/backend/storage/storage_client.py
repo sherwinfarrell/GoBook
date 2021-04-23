@@ -8,7 +8,7 @@ from storage.decorators import check_connection
 @check_connection
 def book_trip(user, route, start_date_time, end_date_time):
     if not user or not route:
-        return
+        return None
 
     trip = TripsTable.from_user_and_route(user, route)
     trip.start_date_time = start_date_time
@@ -17,6 +17,7 @@ def book_trip(user, route, start_date_time, end_date_time):
     try:
         user_trips = get_user_trips(user)
         for t in user_trips:
+            print('user got trip ' + t.trip_id + ' ' + t.route_id)
             if t.route_id == route.route_id:
                 raise RouteAlreadyBooked
     except RouteAlreadyBooked:
@@ -24,7 +25,7 @@ def book_trip(user, route, start_date_time, end_date_time):
 
     try:
         trip.write()
-    except Exception():
+    except Exception:
         return None
 
     return trip.to_trip()
@@ -33,16 +34,21 @@ def book_trip(user, route, start_date_time, end_date_time):
 @check_connection
 def get_current_route_capacity(route):
     if not route:
-        return
-
-    trips = TripsTable.get_trips_by_route_id(route.route_id)
+        return None
+    try:
+        trips = TripsTable.get_trips_by_route_id(route.route_id)
+    except Exception:
+        return None
 
     return len(trips)
 
 
 @check_connection
 def get_routes(country, city=None, area=None, street=None):
-    routes = TripsTable.get_routes(country, city, area, street)
+    try:
+        routes = TripsTable.get_routes(country, city, area, street)
+    except Exception:
+        return None
 
     return routes
 
@@ -50,9 +56,12 @@ def get_routes(country, city=None, area=None, street=None):
 @check_connection
 def get_user_trips(user):
     if not user:
-        return
-
-    trips = TripsTable.get_trips_by_user_id(user.user_id)
+        return None
+    
+    try:
+        trips = TripsTable.get_trips_by_user_id(user.user_id)
+    except Exception:
+        return None
 
     return trips
 
@@ -60,13 +69,18 @@ def get_user_trips(user):
 @check_connection
 def cancel_trip(trip):
     if not trip:
-        return
+        return None
 
-    TripsTable.remove_trip_by_id(trip.trip_id)
+    try:
+        TripsTable.remove_trip_by_id(trip.trip_id)
+    except Exception:
+        return None
+    
+    return 'done'
 
 	
 @check_connection
 def truncate_table():
-	print('cleaning table')
+    print('cleaning table')
     TripsTable.truncate_table()
-	print('finished cleaning')
+    print('finished cleaning')
