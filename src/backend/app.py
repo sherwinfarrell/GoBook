@@ -10,7 +10,7 @@ from pykafka.common import OffsetType
 from models.route import Route
 from models.user import User
 from models.trip import Trip
-from storage.storage_client import book_trip, get_user_trips, get_routes, cancel_trip
+from storage.storage_client import book_trip, get_user_trips, get_routes, cancel_trip, get_current_route_capacity
 import threading, time
 
 app = Flask(__name__)
@@ -73,23 +73,33 @@ class Consumer(threading.Thread):
                     user = User(x["data"]["user"], "test")
                     route = Route(x["data"]["route"], "test", "test", "test",
                                   "test")
-                    trip = book_trip(user, route, "test", "test")
+                    route_capacity = get_current_route_capacity(route)
                     data["id"] = x["id"]
-                    print("This is the trip id " + trip.trip_id)
-                    print("This is the trip book_date_time " +
-                          str(trip.book_date_time))
-                    print("This is the trip start_date_time " +
-                          str(trip.start_date_time))
-                    print("This is the trip end_date_time " +
-                          str(trip.end_date_time))
-                    print("This is the trip route_id " + trip.route_id)
-                    print("This is the trip country " + trip.country)
-                    print("This is the trip city " + trip.city)
-                    print("This is the trip area " + trip.area)
-                    print("This is the trip street " + trip.street)
-                    print("This is the trip user_id " + trip.user_id)
-                    print("This is the trip username " + trip.username)
-                    data["trip_id"] = trip.trip_id
+
+                    if route_capacity<5:
+                        trip = book_trip(user, route, "test", "test")
+                        if trip:
+                            print("This is the trip id " + trip.trip_id)
+                            print("This is the trip book_date_time " +
+                                str(trip.book_date_time))
+                            print("This is the trip start_date_time " +
+                                str(trip.start_date_time))
+                            print("This is the trip end_date_time " +
+                                str(trip.end_date_time))
+                            print("This is the trip route_id " + trip.route_id)
+                            print("This is the trip country " + trip.country)
+                            print("This is the trip city " + trip.city)
+                            print("This is the trip area " + trip.area)
+                            print("This is the trip street " + trip.street)
+                            print("This is the trip user_id " + trip.user_id)
+                            print("This is the trip username " + trip.username)
+                            data["trip_id"] = trip.trip_id
+                    else:
+                        print("booking seems to be full")
+                        data['trip_id'] = None
+                            
+                    print("Data that is being sent back is ")
+                    print(data)
 
                     prod.send("GetBooking", value=data)
 
@@ -117,7 +127,7 @@ class Consumer(threading.Thread):
 
                     prod.send("GetUserBookings", value=data)
 
-                elif self.topic == "cancel":
+                elif self.topic == "Cancellation":
                     trip = Trip(x["data"]["tripid"], "test", "test", "test",
                                 "test", "test", "test", "test", "test", "test",
                                 "test")
@@ -199,8 +209,4 @@ if __name__ == '__main__':
     bookTrip.start()
     getUserTrips.start()
     cancelTrip.start()
-<<<<<<< HEAD
-
-=======
->>>>>>> cc4e72639ff5ee7a6bf2f3007627407fe123d393
     app.run(debug=False)

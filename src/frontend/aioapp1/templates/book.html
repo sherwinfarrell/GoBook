@@ -24,10 +24,10 @@
                 <label for="selectCountry">Selec Country</label>
                 <select class="form-control" id="selectCountry" onchange="getCities(this.id)">
                   <option>Ireland</option>
+                  <option>Sweden</option>
                   <option>UK</option>
-                  <option>US</option>
+                  <option>Italy</option>
                   <option>Germany</option>
-                  <option>India</option>
                 </select>
               </div>
 
@@ -100,8 +100,8 @@
                       })
             }
 
-            else if(selectedCountry=="US"){
-              ['NY','Seattle', 'Houston', 'LA', 'Miami'].forEach((key)=>{
+            else if(selectedCountry=="Italy"){
+              ['Rome','Milan', 'Florence', 'Naples', 'Turin'].forEach((key)=>{
                         citySelect.options[citySelect.options.length] = new Option( key, key )
                       })
             }
@@ -112,8 +112,8 @@
                       })
             }
 
-            else if(selectedCountry=="India"){
-              ['Delhi','Mumbai', 'Kolkata', 'Banglore', 'Goa'].forEach((key)=>{
+            else if(selectedCountry=="Sweden"){
+              ['Stockholm','Göteborg', 'Malmö', 'Uppsala', 'Linköping'].forEach((key)=>{
                         citySelect.options[citySelect.options.length] = new Option( key, key )
                       })
             }

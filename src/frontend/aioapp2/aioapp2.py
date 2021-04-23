@@ -8,6 +8,9 @@ import asyncio
 
 loop = asyncio.get_event_loop()
 
+async def getServerNum(request):
+    return web.Response(text="This is server 2",  status = 200)
+
 
 async def getRoutes(request):
     body = await request.json()
@@ -41,7 +44,7 @@ async def bookTrip(request):
     try:
         print("debug point 1")
         producer = AIOKafkaProducer(
-        loop=loop, bootstrap_servers='localhost:9092')
+        loop=loop, bootstrap_servers='kafka_kafka_1:9093')
         await producer.start()
         await producer.send_and_wait("Booking", json.dumps(nested_dict).encode('utf-8'))
         await producer.stop()
@@ -52,7 +55,7 @@ async def bookTrip(request):
 
         consumer = AIOKafkaConsumer(
         'GetBooking',
-        loop=loop, bootstrap_servers='localhost:9092',
+        loop=loop, bootstrap_servers='kafka_kafka_1:9093',
         group_id="my-group-id",
         auto_offset_reset="latest",
         enable_auto_commit=True,)
@@ -60,19 +63,22 @@ async def bookTrip(request):
         await consumer.start()
 
         async for msg in consumer:
+            await consumer.commit()
             event_data = msg.value
             print(event_data)
             event_data =json.loads(event_data)
             if event_data['id'] == userid:
                 # print(event_data)
                 if 'trip_id' in event_data:
-                    trip_id = event_data['trip_id']
-                    return_result['trip_id'] = trip_id
-                    return_result['city'] = selectedCity
-                    return_result['country'] = selectedCountry
-                    return_result['route'] = selectedRoute
+                    if event_data['trip_id']:
+                        trip_id = event_data['trip_id']
+                        return_result['trip_id'] = trip_id
+                        return_result['city'] = selectedCity
+                        return_result['country'] = selectedCountry
+                        return_result['route'] = selectedRoute
+                    else:
+                        error = "The route is fully booked"
 
-                    await consumer.commit()
                 break
         
     except Exception as e:
@@ -116,7 +122,7 @@ async def getBookedTrips(request):
     try:
         print("debug point 1")
         producer = AIOKafkaProducer(
-        loop=loop, bootstrap_servers='localhost:9092')
+        loop=loop, bootstrap_servers='kafka_kafka_1:9093')
         await producer.start()
         await producer.send_and_wait("UserBookings", json.dumps(nested_dict).encode('utf-8'))
         await producer.stop()
@@ -127,7 +133,7 @@ async def getBookedTrips(request):
 
         consumer = AIOKafkaConsumer(
         'GetUserBookings',
-        loop=loop, bootstrap_servers='localhost:9092',
+        loop=loop, bootstrap_servers='kafka_kafka_1:9093',
         group_id="my-group-id",
         auto_offset_reset="latest",
         enable_auto_commit=True,)
@@ -135,6 +141,7 @@ async def getBookedTrips(request):
         await consumer.start()
 
         async for msg in consumer:
+            await consumer.commit()
             event_data = msg.value
             print(event_data)
             event_data =json.loads(event_data)
@@ -143,10 +150,10 @@ async def getBookedTrips(request):
                 if 'trips' in event_data:
                     trips = event_data['trips']
                     for trip in trips:
-                        return_result['trip'] = trips[trip]
+                        print(trips[trip])
+                        return_result[trip] = trips[trip]
                         
 
-                    await consumer.commit()
                 break
         
     except Exception as e:
@@ -161,7 +168,7 @@ async def getBookedTrips(request):
     result['Status'] = "Success"
 
     
-
+    print(return_result)
     if error:
         return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}), status = 201)
     if result['return_result'] :
@@ -182,7 +189,7 @@ async def cancelTrip(request):
     # print("The selected Route is " + selectedRoute)
     # print("The selected City is " + selectedCity)
     nested_dict = {}
-    nested_dict ={'id':userid, 'data': {'trip_id': trip_id}}
+    nested_dict ={'id':userid, 'data': {'tripid': trip_id}}
     
     
 
@@ -190,7 +197,7 @@ async def cancelTrip(request):
     try:
         print("debug point 1")
         producer = AIOKafkaProducer(
-        loop=loop, bootstrap_servers='localhost:9092')
+        loop=loop, bootstrap_servers='kafka_kafka_1:9093')
         await producer.start()
         await producer.send_and_wait("Cancellation", json.dumps(nested_dict).encode('utf-8'))
         await producer.stop()
@@ -201,7 +208,7 @@ async def cancelTrip(request):
 
         consumer = AIOKafkaConsumer(
         'GetCancellation',
-        loop=loop, bootstrap_servers='localhost:9092',
+        loop=loop, bootstrap_servers='kafka_kafka_1:9093',
         group_id="my-group-id",
         auto_offset_reset="latest",
         enable_auto_commit=True,)
@@ -209,18 +216,19 @@ async def cancelTrip(request):
         await consumer.start()
 
         async for msg in consumer:
+            await consumer.commit()
             event_data = msg.value
             print(event_data)
             event_data =json.loads(event_data)
             if event_data['id'] == userid:
+                print(event_data)
                 if 'is_cancelled' in event_data:
                     print(event_data['is_cancelled'])
                     return_result['is_called'] = event_data['is_cancelled']
-                    await consumer.commit()
                 break
         
     except Exception as e:
-        print("There was an error " + str(e))
+        print("There was an error in exception " + str(e))
         error = e
     
     finally: 
@@ -247,5 +255,7 @@ app.router.add_get('/', serveIndex)
 app.router.add_post('/bookTrip', bookTrip)
 app.router.add_post('/cancelTrip', cancelTrip)
 app.router.add_post('/getBookedTrips', getBookedTrips)
+app.router.add_get('/getServerNum', getServerNum)
 
-web.run_app(app)
+
+web.run_app(app, port=5000)

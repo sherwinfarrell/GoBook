@@ -1,12 +1,12 @@
 version: '3'
 services:
 
-    flaskapp1:
-        build: ./flaskapp1
+    aioapp1:
+        build: ./aioapp1
         ports:
             - "5001:5000"
-    flaskapp2:
-        build: ./flaskapp2
+    aioapp2:
+        build: ./aioapp2
         ports:
             - "5002:5000"
 
@@ -15,8 +15,8 @@ services:
         ports:
             - "8080:80"
         depends_on:
-           - flaskapp1
-           - flaskapp2
+           - aioapp1
+           - aioapp2
 
 networks:
     default:
