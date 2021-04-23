@@ -10,7 +10,7 @@ from pykafka.common import OffsetType
 from models.route import Route
 from models.user import User
 from models.trip import Trip
-from storage.storage_client import book_trip, get_user_trips, get_routes, cancel_trip, get_current_route_capacity
+from storage.storage_client import book_trip, get_user_trips, get_routes, cancel_trip, get_current_route_capacity, truncate_table
 import threading, time
 
 app = Flask(__name__)
@@ -151,6 +151,22 @@ class Consumer(threading.Thread):
 def index():
     return "welcome to back end server"
 
+@app.route('/clearTable', methods=['GET'])
+def clear_table():
+    error = None
+    try:
+        truncate_table()
+    except Exception as e: 
+        error = e
+    if error: 
+        print("returning error")
+        return "There was a problem cleaning the table: " + str(error)
+    else : 
+        print("returning success")
+        return "The table has been cleared"
+
+
+
 
 @app.route('/stream/<cityName>')
 def sendMessage(cityName):
@@ -209,4 +225,4 @@ if __name__ == '__main__':
     bookTrip.start()
     getUserTrips.start()
     cancelTrip.start()
-    app.run(debug=False)
+    app.run(debug=False, port=5005)
