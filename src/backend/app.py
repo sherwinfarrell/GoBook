@@ -16,7 +16,6 @@ import threading, time
 app = Flask(__name__)
 
 TOPIC = "first"
-count = 0
 # producerG = None
 prod = KafkaProducer(bootstrap_servers=['localhost:9092'],
                      value_serializer=lambda x: json.dumps(x).encode('utf-8'))
@@ -52,6 +51,7 @@ class Consumer(threading.Thread):
 
         while not self.stop_event.is_set():
             for message in consumer:
+                self.count = self.count + 1
                 data = {}
                 print(message)
                 x = json.loads(message.value.decode())
@@ -61,10 +61,11 @@ class Consumer(threading.Thread):
                                                 x["data"]["city"], "test",
                                                 "test")
                     data["id"] = x["id"]
-                    prod.send("GetRoutes", value=data)
+                    if self.count % 9 != 0:
+
+                        prod.send("GetRoutes", value=data)
 
                 elif self.topic == "Booking":
-                    self.count = self.count + 1
                     print(self.count)
                     for i in x:
                         print(i, x[i])
@@ -90,8 +91,8 @@ class Consumer(threading.Thread):
                     print("This is the trip user_id " + trip.user_id)
                     print("This is the trip username " + trip.username)
                     data["trip_id"] = trip.trip_id
-
-                    prod.send("GetBooking", value=data)
+                    if self.count % 9 != 0:
+                        prod.send("GetBooking", value=data)
 
                 elif self.topic == "UserBookings":
                     print("Sending Data  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
@@ -114,8 +115,8 @@ class Consumer(threading.Thread):
                         "Data that is being sent back is **************************************"
                     )
                     print(data)
-
-                    prod.send("GetUserBookings", value=data)
+                    if self.count % 9 != 0:
+                        prod.send("GetUserBookings", value=data)
 
                 elif self.topic == "cancel":
                     trip = Trip(x["data"]["tripid"], "test", "test", "test",
@@ -130,7 +131,9 @@ class Consumer(threading.Thread):
                         "Data that is being sent back is ************************************************************"
                     )
                     print(data)
-                    prod.send("GetCancellation", value=data)
+                    if self.count % 9 != 0:
+
+                        prod.send("GetCancellation", value=data)
 
                 if self.stop_event.is_set():
                     break
@@ -199,8 +202,4 @@ if __name__ == '__main__':
     bookTrip.start()
     getUserTrips.start()
     cancelTrip.start()
-<<<<<<< HEAD
-
-=======
->>>>>>> cc4e72639ff5ee7a6bf2f3007627407fe123d393
     app.run(debug=False)
