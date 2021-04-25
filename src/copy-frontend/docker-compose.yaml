@@ -5,11 +5,12 @@ services:
         build: ./aioapp1
         ports:
             - "5001:5000"
+        env_file: .env
     aioapp2:
         build: ./aioapp2
         ports:
             - "5002:5000"
-
+        env_file: .env
     nginx:
         build: ./nginx
         ports:
