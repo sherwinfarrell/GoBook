@@ -48,12 +48,14 @@ async def bookTrip(request):
         user = User(userid, "test")
         route = Route(selectedRoute, selectedCountry, selectedCity, "test","test")
         route_capacity = get_current_route_capacity(route)
-        if route_capacity:
+        print("Route capacity that we got back is ==================================================> " + str(route_capacity))
+        if route_capacity >-1:
             if route_capacity<5:
                 print("the user is ", user.user_id)
                 print("the rotue is ", route.route_id)
                 trip = book_trip(user, route, "test", "test")
                 if trip:
+                    print("It got the trip yessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss")
                     return_result["trip_id"] = trip.trip_id
                     return_result['city'] = selectedCity
                     return_result['country'] = selectedCountry

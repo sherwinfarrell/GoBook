@@ -37,16 +37,19 @@ def book_trip(user, route, start_date_time, end_date_time):
     return trip.to_trip()
 
 
-@check_connection
 def get_current_route_capacity(route):
     if not route:
+        print("It thinks its not a route *****************************************************************************")
         return None
     try:
         trips = TripsTable.get_trips_by_route_id(route.route_id)
-    except Exception:
-        return None
+        # except Exception as e:
+        print("There was an error with route capacity " )
+        print(trips)
 
-    return len(trips)
+        return len(trips)
+    except: 
+        return -1
 
 
 @check_connection
