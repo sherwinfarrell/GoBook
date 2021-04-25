@@ -12,7 +12,7 @@ import threading, time
 loop = asyncio.get_event_loop()
 
 async def getServerNum(request):
-    return web.Response(text="This is server 1",  status = 200)
+    return web.Response(text="This is server 2",  status = 200)
 
 
 async def getRoutes(request):
@@ -46,30 +46,32 @@ async def bookTrip(request):
     error = None
     try:
         user = User(userid, "test")
-        route = Route(selectedRoute, "test", "test", "test","test")
-        # route_capacity = get_current_route_capacity(route)
-        # if route_capacity:
-        # if route_capacity<5:
-        print("the user is ", user.user_id)
-        print("the rotue is ", route.route_id)
-        trip = book_trip(user, route, "test", "test")
-        if trip:
-            return_result["trip_id"] = trip.trip_id
-            return_result['city'] = selectedCity
-            return_result['country'] = selectedCountry
-            return_result['route'] = selectedRoute
-       # else:
-        #     print("booking seems to be full")
-        #     error = "Booking is Full"
-        #     return_result['trip_id'] = None
-        # else:
-        #     print("There is an error with route capacity")
-        #     error = "There is an error with route capacity, Try again "
-        #     return_result['trip_id'] = None
-        else:
-            error = "No Trip"
-            return_result = None
+        route = Route(selectedRoute, selectedCountry, selectedCity, "test","test")
+        route_capacity = get_current_route_capacity(route)
+        if route_capacity:
+            if route_capacity<5:
+                print("the user is ", user.user_id)
+                print("the rotue is ", route.route_id)
+                trip = book_trip(user, route, "test", "test")
+                if trip:
+                    return_result["trip_id"] = trip.trip_id
+                    return_result['city'] = selectedCity
+                    return_result['country'] = selectedCountry
+                    return_result['route'] = selectedRoute
+                else:
+                        print("There was an error with booking the trip")
+                        error = "There was an error with booking the trip"
+                        return_result = None
                 
+            else:
+                    print("booking seems to be full")
+                    error = "Booking is Full"
+                    return_result['trip_id'] = None
+        else:
+            print("There is an error with route capacity")
+            error = "There is an error with route capacity, Try again "
+            return_result['trip_id'] = None
+        
   
 
         
@@ -93,149 +95,105 @@ async def bookTrip(request):
 
 
 
-# async def getBookedTrips(request):
-#     body = await request.json()
+async def getBookedTrips(request):
+    body = await request.json()
+    userid = body['userid']
 
+    return_result = {}
 
-#     userid = body['userid']
+    nested_dict = {}
+    nested_dict ={'id':userid,'data':{ 'user':userid}}
     
-
-#     return_result = {}
-
-    
-#     nested_dict = {}
-#     nested_dict ={'id':userid,'data':{ 'user':userid}}
-    
-    
-
-#     error = None
-#     try:
-#         print("debug point 1")
-#         producer = AIOKafkaProducer(
-#         loop=loop, bootstrap_servers='localhost:9092')
-#         await producer.start()
-#         await producer.send_and_wait("UserBookings", json.dumps(nested_dict).encode('utf-8'))
-#         await producer.stop()
-
-
-#         print("debug point 3")
-#         # print("The data is" + data1)
-
-#         consumer = AIOKafkaConsumer(
-#         'GetUserBookings',
-#         loop=loop, bootstrap_servers='localhost:9092',
-#         group_id="my-group-id",
-#         auto_offset_reset="latest",
-#         enable_auto_commit=True,)
-        
-#         await consumer.start()
-
-#         async for msg in consumer:
-#             await consumer.commit()
-#             event_data = msg.value
-#             print(event_data)
-#             event_data =json.loads(event_data)
-#             if event_data['id'] == userid:
-#                 # print(event_data)
-#                 if 'trips' in event_data:
-#                     trips = event_data['trips']
-#                     for trip in trips:
-#                         print(trips[trip])
-#                         return_result[trip] = trips[trip]
+    error = None
+    try:
+        trips = get_user_trips(User(userid, "test"))
+        if trips:
+            print("There are the trips")
+            print(trips)
+            for trip in trips:
+                print("This is the trip")
+                print(trip.trip_id)
+                return_result[trip.trip_id] = trip.country + "," + trip.city + "," + trip.route_id
+        else:
+            error = "The no trips for the user"
+            return_result = None
                         
 
-#                 break
+                
         
-#     except Exception as e:
-#         print("There was an error " + str(e))
-#         error = e
-    
-#     finally: 
-#         await consumer.stop()
-
-#     result={}
-#     result['return_result'] = return_result
-#     result['Status'] = "Success"
-
-    
-#     print(return_result)
-#     if error:
-#         return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}), status = 201)
-#     if result['return_result'] :
-#         return web.Response(text=json.dumps(result), status = 200)
-#     else :
-#         return web.Response(text=json.dumps({"Status": "This user has no booked trips"}), status = 201)
-
-# async def cancelTrip(request):
-#     body = await request.json()
-
-
-#     userid = body['userid']
-#     trip_id = body['trip_id']
+    except Exception as e:
+        print("There was an error " + str(e))
+        error = e
     
 
-#     return_result = {}
 
-#     # print("The selected Route is " + selectedRoute)
-#     # print("The selected City is " + selectedCity)
-#     nested_dict = {}
-#     nested_dict ={'id':userid, 'data': {'tripid': trip_id}}
+    result={}
+    result['return_result'] = return_result
+    result['Status'] = "Success"
+
+    print("The data that is being send back is ")
+    print(result['return_result']) 
+    print(return_result)
+
+    if error:
+        return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}), status = 201)
+    if result['return_result'] :
+        return web.Response(text=json.dumps(result), status = 200)
+    else :
+        return web.Response(text=json.dumps({"Status": "This user has no booked trips"}), status = 201)
+
+
+
+
+async def cancelTrip(request):
+    body = await request.json()
+
+
+    userid = body['userid']
+    trip_id = body['trip_id']
+    
+
+    return_result = {}
+
+    # print("The selected Route is " + selectedRoute)
+    # print("The selected City is " + selectedCity)
+    nested_dict = {}
+    nested_dict ={'id':userid, 'data': {'tripid': trip_id}}
     
     
 
-#     error = None
-#     try:
-#         print("debug point 1")
-#         producer = AIOKafkaProducer(
-#         loop=loop, bootstrap_servers='localhost:9092')
-#         await producer.start()
-#         await producer.send_and_wait("Cancellation", json.dumps(nested_dict).encode('utf-8'))
-#         await producer.stop()
-
-
-#         print("debug point 3")
-#         # print("The data is" + data1)
-
-#         consumer = AIOKafkaConsumer(
-#         'GetCancellation',
-#         loop=loop, bootstrap_servers='localhost:9092',
-#         group_id="my-group-id",
-#         auto_offset_reset="latest",
-#         enable_auto_commit=True,)
-        
-#         await consumer.start()
-
-#         async for msg in consumer:
-#             await consumer.commit()
-#             event_data = msg.value
-#             print(event_data)
-#             event_data =json.loads(event_data)
-#             if event_data['id'] == userid:
-#                 print(event_data)
-#                 if 'is_cancelled' in event_data:
-#                     print(event_data['is_cancelled'])
-#                     return_result['is_called'] = event_data['is_cancelled']
-#                 break
-        
-#     except Exception as e:
-#         print("There was an error in exception " + str(e))
-#         error = e
+    error = None
+    try:
+        print("debug point 1")
+        trip = Trip(trip_id, "test", "test", "test",
+                                "test", "test", "test", "test", "test", "test",
+                                "test")
+        is_cancelled = cancel_trip(trip)
+        if is_cancelled:
+            return_result['is_cancelled'] = is_cancelled
+            print("Cancelled trip successful")
+        else:
+            error = "There was an error cancelling this trip"
+            print("There was an error cancelling")
     
-#     finally: 
-#         await consumer.stop()
 
-#     result={}
-#     result['return_result'] = return_result
-#     result['Status'] = "Success"
+    except Exception as e:
+        print("There was an error in exception " + str(e))
+        error = e
+    
+  
+    result={}
+    result['return_result'] = return_result
+    result['Status'] = "Success"
 
     
 
-#     if error:
-#         return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}), status = 201)
-#     if result['return_result'] :
-#         return web.Response(text=json.dumps(result), status = 200)
-#     else :
-#         return web.Response(text=json.dumps({"Status": "There was a problem cancelling the trip"}), status = 201)
+    if error:
+        return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}), status = 201)
+    if result['return_result'] :
+        return web.Response(text=json.dumps(result), status = 200)
+    else :
+        return web.Response(text=json.dumps({"Status": "There was a problem cancelling the trip"}), status = 201)
 
 
 
@@ -243,9 +201,9 @@ app = web.Application()
 app.router.add_post('/getRoutes', getRoutes)
 app.router.add_get('/', serveIndex)
 app.router.add_post('/bookTrip', bookTrip)
-# app.router.add_post('/cancelTrip', cancelTrip)
-# app.router.add_post('/getBookedTrips', getBookedTrips)
-# app.router.add_get('/getServerNum', getServerNum)
+app.router.add_post('/cancelTrip', cancelTrip)
+app.router.add_post('/getBookedTrips', getBookedTrips)
+app.router.add_get('/getServerNum', getServerNum)
 
 
 web.run_app(app, port=5000)

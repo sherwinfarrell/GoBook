@@ -116,9 +116,7 @@ class Consumer(threading.Thread):
                     for i, trip in enumerate(trips):
                         print(trip.trip_id)
                         # print("id is ", i)
-                        data["trips"][
-                            trip.
-                            trip_id] = trip.country + "," + trip.city + "," + trip.route_id
+                        data["trips"][trip.trip_id] = trip.country + "," + trip.city + "," + trip.route_id
                         print(trip)
                     print(
                         "Data that is being sent back is **************************************"
