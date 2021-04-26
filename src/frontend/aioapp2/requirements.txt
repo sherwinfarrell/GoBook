@@ -1,0 +1,8 @@
+aiohttp==3.7.4.post0
+aiokafka==0.7.0
+asyncio==3.4.3
+Flask==1.1.2
+kafka-python==2.0.2
+pykafka==2.8.0
+pynamodb==5.0.3
+aiohttp-aiocache

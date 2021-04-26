@@ -10,7 +10,7 @@ from pykafka.common import OffsetType
 from models.route import Route
 from models.user import User
 from models.trip import Trip
-from storage.storage_client import book_trip, get_user_trips, get_routes, cancel_trip
+from storage.storage_client import book_trip, get_user_trips, get_routes, cancel_trip, get_current_route_capacity, truncate_table
 import threading, time
 
 app = Flask(__name__)
@@ -74,25 +74,35 @@ class Consumer(threading.Thread):
                     user = User(x["data"]["user"], "test")
                     route = Route(x["data"]["route"], "test", "test", "test",
                                   "test")
-                    trip = book_trip(user, route, "test", "test")
+                    route_capacity = get_current_route_capacity(route)
                     data["id"] = x["id"]
-                    print("This is the trip id " + trip.trip_id)
-                    print("This is the trip book_date_time " +
-                          str(trip.book_date_time))
-                    print("This is the trip start_date_time " +
-                          str(trip.start_date_time))
-                    print("This is the trip end_date_time " +
-                          str(trip.end_date_time))
-                    print("This is the trip route_id " + trip.route_id)
-                    print("This is the trip country " + trip.country)
-                    print("This is the trip city " + trip.city)
-                    print("This is the trip area " + trip.area)
-                    print("This is the trip street " + trip.street)
-                    print("This is the trip user_id " + trip.user_id)
-                    print("This is the trip username " + trip.username)
-                    data["trip_id"] = trip.trip_id
-                    if self.count % 9 != 0:
-                        prod.send("GetBooking", value=data)
+
+                    if route_capacity < 5:
+                        trip = book_trip(user, route, "test", "test")
+                        if trip:
+                            print("This is the trip id " + trip.trip_id)
+                            print("This is the trip book_date_time " +
+                                  str(trip.book_date_time))
+                            print("This is the trip start_date_time " +
+                                  str(trip.start_date_time))
+                            print("This is the trip end_date_time " +
+                                  str(trip.end_date_time))
+                            print("This is the trip route_id " + trip.route_id)
+                            print("This is the trip country " + trip.country)
+                            print("This is the trip city " + trip.city)
+                            print("This is the trip area " + trip.area)
+                            print("This is the trip street " + trip.street)
+                            print("This is the trip user_id " + trip.user_id)
+                            print("This is the trip username " + trip.username)
+                            data["trip_id"] = trip.trip_id
+                    else:
+                        print("booking seems to be full")
+                        data['trip_id'] = None
+
+                    print("Data that is being sent back is ")
+                    print(data)
+
+                    prod.send("GetBooking", value=data)
 
                 elif self.topic == "UserBookings":
                     print("Sending Data  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
@@ -118,7 +128,7 @@ class Consumer(threading.Thread):
                     if self.count % 9 != 0:
                         prod.send("GetUserBookings", value=data)
 
-                elif self.topic == "cancel":
+                elif self.topic == "Cancellation":
                     trip = Trip(x["data"]["tripid"], "test", "test", "test",
                                 "test", "test", "test", "test", "test", "test",
                                 "test")
@@ -143,6 +153,21 @@ class Consumer(threading.Thread):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     return "welcome to back end server"
+
+
+@app.route('/clearTable', methods=['GET'])
+def clear_table():
+    error = None
+    try:
+        truncate_table()
+    except Exception as e:
+        error = e
+    if error:
+        print("returning error")
+        return "There was a problem cleaning the table: " + str(error)
+    else:
+        print("returning success")
+        return "The table has been cleared"
 
 
 @app.route('/stream/<cityName>')
@@ -202,4 +227,4 @@ if __name__ == '__main__':
     bookTrip.start()
     getUserTrips.start()
     cancelTrip.start()
-    app.run(debug=False)
+    app.run(debug=False, port=5005)

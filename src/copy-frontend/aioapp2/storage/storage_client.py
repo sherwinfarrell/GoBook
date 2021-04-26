@@ -8,12 +8,15 @@ from storage.decorators import check_connection
 @check_connection
 def book_trip(user, route, start_date_time, end_date_time):
     if not user or not route:
+        print("Storage Client ========> user is none")
         return None
 
+    print("Storage Client ========> user is not none")
     trip = TripsTable.from_user_and_route(user, route)
     trip.start_date_time = start_date_time
     trip.end_date_time = end_date_time
 
+    print(" Storage Client ========>  trip id is ", trip.trip_id)
     try:
         user_trips = get_user_trips(user)
         for t in user_trips:
@@ -21,26 +24,32 @@ def book_trip(user, route, start_date_time, end_date_time):
             if t.route_id == route.route_id:
                 raise RouteAlreadyBooked
     except RouteAlreadyBooked:
+        print("Storage Client ========> Route already booked")
         return None
 
     try:
         trip.write()
     except Exception:
+        print("Storage Client ========>   Trip.write worked")
         return None
 
+    print("Storage Client ========>   Returning Something")
     return trip.to_trip()
 
 
-@check_connection
 def get_current_route_capacity(route):
     if not route:
+        print("It thinks its not a route *****************************************************************************")
         return None
     try:
         trips = TripsTable.get_trips_by_route_id(route.route_id)
-    except Exception:
-        return None
+        # except Exception as e:
+        print("There was an error with route capacity " )
+        print(trips)
 
-    return len(trips)
+        return len(trips)
+    except: 
+        return -1
 
 
 @check_connection
