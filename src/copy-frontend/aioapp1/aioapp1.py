@@ -62,28 +62,23 @@ async def bookTrip(request):
     error = None
     try:
         user = User(userid, "test")
-        route = Route(selectedRoute, selectedCountry, selectedCity, "test",
-                      "test")
+        route = Route(selectedRoute, selectedCountry, selectedCity, "test","test")
         route_capacity = get_current_route_capacity(route)
-        print(
-            "Route capacity that we got back is ==================================================> "
-            + str(route_capacity))
+        print( "Route capacity that we got back is ==================================================> "+ str(route_capacity))
         if route_capacity > -1:
             if route_capacity < 5:
                 print("the user is ", user.user_id)
                 print("the rotue is ", route.route_id)
                 trip = book_trip(user, route, "test", "test")
                 if trip:
-                    print(
-                        "It got the trip yessssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
-                    )
+                    print("It got the trip yes ------------------------------------------------------------")
                     return_result["trip_id"] = trip.trip_id
                     return_result['city'] = selectedCity
                     return_result['country'] = selectedCountry
                     return_result['route'] = selectedRoute
                 else:
-                    print("There was an error with booking the trip")
-                    error = "There was an error with booking the trip"
+                    print("Booking is full")
+                    error = "Booking is full"
                     return_result = None
 
             else:
@@ -133,9 +128,7 @@ async def getBookedTrips(request):
             for trip in trips:
                 print("This is the trip")
                 print(trip.trip_id)
-                return_result[
-                    trip.
-                    trip_id] = trip.country + "," + trip.city + "," + trip.route_id
+                return_result[ trip.trip_id] = trip.country + "," + trip.city + "," + trip.route_id
         else:
             error = "The no trips for the user"
             return_result = None
@@ -153,12 +146,13 @@ async def getBookedTrips(request):
     print(return_result)
 
     if error:
-        return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}),status=201)
+        return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}), status=201)
     if result['return_result']:
         customCache[userid] = result
         return web.Response(text=json.dumps(result), status=200)
     else:
-        return web.Response(text=json.dumps({"Status": "This user has no booked trips"}),status=201)
+        return web.Response(text=json.dumps(
+            {"Status": "This user has no booked trips"}), status=201)
 
 
 async def cancelTrip(request):
@@ -178,8 +172,7 @@ async def cancelTrip(request):
     error = None
     try:
         print("debug point 1")
-        trip = Trip(trip_id, "test", "test", "test", "test", "test", "test",
-                    "test", "test", "test", "test")
+        trip = Trip(trip_id, "test", "test", "test", "test", "test", "test","test", "test", "test", "test")
         is_cancelled = cancel_trip(trip)
         if is_cancelled:
             return_result['is_cancelled'] = is_cancelled
@@ -197,13 +190,11 @@ async def cancelTrip(request):
     result['Status'] = "Success"
 
     if error:
-        return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}),
-                            status=201)
+        return web.Response(text=json.dumps(  {"Status": "There was and Error: " + str(error)}),  status=201)
     if result['return_result']:
         return web.Response(text=json.dumps(result), status=200)
     else:
-        return web.Response(text=json.dumps({"Status": "There was a problem cancelling the trip"}),
-                            status=201)
+        return web.Response(text=json.dumps( {"Status": "There was a problem cancelling the trip"}),status=201)
 
 
 app = web.Application()
