@@ -12,8 +12,6 @@ import threading, time
 
 loop = asyncio.get_event_loop()
 
-customCache = {}
-
 
 async def getServerNum(request):
     return web.Response(text="This is server 1", status=200)
@@ -37,9 +35,6 @@ async def bookTrip(request):
     selectedRoute = body['route']
     selectedCountry = body['country']
     userid = body['userid']
-    if (userid in customCache):
-        del customCache[userid]
-
     return_result = {}
 
     print("The selected Route is " + selectedRoute)
@@ -111,8 +106,6 @@ async def bookTrip(request):
 async def getBookedTrips(request):
     body = await request.json()
     userid = body['userid']
-    if (userid in customCache):
-        return web.Response(text=json.dumps(customCache[userid]), status=200)
 
     return_result = {}
 
@@ -148,7 +141,6 @@ async def getBookedTrips(request):
     if error:
         return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}), status=201)
     if result['return_result']:
-        customCache[userid] = result
         return web.Response(text=json.dumps(result), status=200)
     else:
         return web.Response(text=json.dumps(
@@ -160,8 +152,6 @@ async def cancelTrip(request):
 
     userid = body['userid']
     trip_id = body['trip_id']
-    if (userid in customCache):
-        del customCache[userid]
     return_result = {}
 
     # print("The selected Route is " + selectedRoute)
