@@ -3,9 +3,7 @@ import json
 import logging
 import time
 import asyncio
-from aiohttp_cache import (  # noqa
-    setup_cache, cache, AvailableKeys,
-)
+
 from models.route import Route
 from models.user import User
 from models.trip import Trip
@@ -13,7 +11,8 @@ from storage.storage_client import book_trip, get_user_trips, get_routes, cancel
 import threading, time
 
 loop = asyncio.get_event_loop()
-custom_cache_key = (AvailableKeys.method, AvailableKeys.json)
+
+customCache = {}
 
 
 async def getServerNum(request):
@@ -38,6 +37,8 @@ async def bookTrip(request):
     selectedRoute = body['route']
     selectedCountry = body['country']
     userid = body['userid']
+    if (userid in customCache):
+        del customCache[userid]
 
     return_result = {}
 
@@ -105,24 +106,18 @@ async def bookTrip(request):
     print(result['return_result'])
 
     if error:
-        return web.Response(text=json.dumps(
-            {"Status": "There was and Error: " + str(error)}),
-                            status=201)
+        return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}),status=201)
     if result['return_result']:
         return web.Response(text=json.dumps(result), status=200)
     else:
-        return web.Response(text=json.dumps(
-            {"Status": "You have already made this booking"}),
-                            status=201)
+        return web.Response(text=json.dumps({"Status": "You have already made this booking"}),status=201)
 
 
-@cache(
-    expires=1 * 24 * 3600,  # in seconds
-    unless=False,
-)
 async def getBookedTrips(request):
     body = await request.json()
     userid = body['userid']
+    if (userid in customCache):
+        return web.Response(text=json.dumps(customCache[userid]), status=200)
 
     return_result = {}
 
@@ -158,15 +153,12 @@ async def getBookedTrips(request):
     print(return_result)
 
     if error:
-        return web.Response(text=json.dumps(
-            {"Status": "There was and Error: " + str(error)}),
-                            status=201)
+        return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}),status=201)
     if result['return_result']:
+        customCache[userid] = result
         return web.Response(text=json.dumps(result), status=200)
     else:
-        return web.Response(text=json.dumps(
-            {"Status": "This user has no booked trips"}),
-                            status=201)
+        return web.Response(text=json.dumps({"Status": "This user has no booked trips"}),status=201)
 
 
 async def cancelTrip(request):
@@ -174,7 +166,8 @@ async def cancelTrip(request):
 
     userid = body['userid']
     trip_id = body['trip_id']
-
+    if (userid in customCache):
+        del customCache[userid]
     return_result = {}
 
     # print("The selected Route is " + selectedRoute)
@@ -204,14 +197,12 @@ async def cancelTrip(request):
     result['Status'] = "Success"
 
     if error:
-        return web.Response(text=json.dumps(
-            {"Status": "There was and Error: " + str(error)}),
+        return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}),
                             status=201)
     if result['return_result']:
         return web.Response(text=json.dumps(result), status=200)
     else:
-        return web.Response(text=json.dumps(
-            {"Status": "There was a problem cancelling the trip"}),
+        return web.Response(text=json.dumps({"Status": "There was a problem cancelling the trip"}),
                             status=201)
 
 
@@ -222,6 +213,5 @@ app.router.add_post('/bookTrip', bookTrip)
 app.router.add_post('/cancelTrip', cancelTrip)
 app.router.add_post('/getBookedTrips', getBookedTrips)
 app.router.add_get('/getServerNum', getServerNum)
-setup_cache(app, key_pattern=custom_cache_key)
 
 web.run_app(app, port=5000)
