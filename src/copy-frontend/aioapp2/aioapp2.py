@@ -1,9 +1,5 @@
 from aiohttp import web
 import json
-<<<<<<< HEAD
-
-=======
->>>>>>> 48f629e00a39f5425d360b4b17f23691ef4f5c30
 import logging
 import time
 import asyncio
@@ -209,4 +205,4 @@ app.router.add_post('/bookTrip', bookTrip)
 app.router.add_post('/cancelTrip', cancelTrip)
 app.router.add_post('/getBookedTrips', getBookedTrips)
 app.router.add_get('/getServerNum', getServerNum)
-web.run_app(app, port=5000)
+web.run_app(app, host="127.0.0.1",port=5000)

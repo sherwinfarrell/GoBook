@@ -204,5 +204,4 @@ app.router.add_post('/bookTrip', bookTrip)
 app.router.add_post('/cancelTrip', cancelTrip)
 app.router.add_post('/getBookedTrips', getBookedTrips)
 app.router.add_get('/getServerNum', getServerNum)
-
 web.run_app(app, port=5000)

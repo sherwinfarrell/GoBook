@@ -122,6 +122,10 @@
 
           }
 
+          const fetch_retry = (url, options, n) => fetch(url, options).catch(function(error) {
+            if (n === 1) throw error;
+                return fetch_retry(url, options, n - 1);
+            });
         function getRoutes(){
                   var selectedCityIndex = document.getElementById("selectCity");
                   var selectedCity = selectedCityIndex.options[selectedCityIndex.selectedIndex].text;
@@ -134,7 +138,7 @@
                   useridinput = document.getElementById('userid')
                   userid = useridinput.value
 
-                  fetch("/getRoutes", {
+                  fetch_retry("/getRoutes", {
                     method: "POST", 
                     headers: new Headers({'content-type': 'application/json'}),
 
@@ -143,7 +147,7 @@
                       city: selectedCity
 
                     })
-                  }).then(res => {
+                  },2).then(res => {
                     console.log("Request complete! response:", );
                     // console.log(res.json())
                     return res.json()
@@ -175,14 +179,14 @@
           // console.log(useridinput.value)
           data = {'user_id': userid}
          
-          fetch("/getBookedTrips", {
+          fetch_retry("/getBookedTrips", {
             method: "POST", 
             headers: new Headers({'content-type': 'application/json'}),
 
             body: JSON.stringify({
               userid: userid
             })
-          }).then(res => {
+          },2).then(res => {
             console.log("Request complete! response:", );
             // console.log(res.json())
             return res.json()
@@ -236,7 +240,7 @@
         console.log(selectedRoute);
         
         if(userid){
-        fetch("/bookTrip", {
+          fetch_retry("/bookTrip", {
             method: "POST", 
             headers: new Headers({'content-type': 'application/json'}),
 
@@ -246,7 +250,7 @@
             city: selectedCity,
             country: selectedCountry
             })
-          }).then(res => {
+          },2).then(res => {
 
             console.log("Request complete! response:", );
             console.log(res.status); // Will show you the status
@@ -299,7 +303,7 @@
           if(userid){
           
 
-          fetch("/cancelTrip", {
+            fetch_retry("/cancelTrip", {
             method: "POST", 
             headers: new Headers({'content-type': 'application/json'}),
 
@@ -308,7 +312,7 @@
               userid: userid
             })
 
-          }).then(res => {
+          },2).then(res => {
             console.log("Request complete! response:", );
             // console.log(res.json())
             return res.json()
