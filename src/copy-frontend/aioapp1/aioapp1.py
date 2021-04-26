@@ -9,6 +9,26 @@ from models.user import User
 from models.trip import Trip
 from storage.storage_client import book_trip, get_user_trips, get_routes, cancel_trip, get_current_route_capacity, truncate_table
 import threading, time
+import numpy as np
+
+
+
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter(
+    '%(asctime)s | %(name)s | [%(levelname)s] : %(name)s | %(lineno)d | %(module)s | %(filename)s | %(message)s')
+logger.setLevel(logging.DEBUG)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+stream_handler.setFormatter(formatter)
+
+logFilePath = "my.log"
+file_handler = logging.FileHandler(logFilePath)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.DEBUG)
+
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 loop = asyncio.get_event_loop()
 
@@ -19,7 +39,7 @@ async def getServerNum(request):
 
 async def getRoutes(request):
     body = await request.json()
-    print(body)
+    logger.info(body)
     response_obj = {'status': 'success'}
     return web.Response(text=json.dumps(response_obj), status=200)
 
@@ -37,8 +57,8 @@ async def bookTrip(request):
     userid = body['userid']
     return_result = {}
 
-    print("The selected Route is " + selectedRoute)
-    print("The selected City is " + selectedCity)
+    logger.info("The selected Route is " + selectedRoute)
+    logger.info("The selected City is " + selectedCity)
     nested_dict = {}
     nested_dict = {
         'id': userid,
@@ -59,41 +79,46 @@ async def bookTrip(request):
         user = User(userid, "test")
         route = Route(selectedRoute, selectedCountry, selectedCity, "test","test")
         route_capacity = get_current_route_capacity(route)
-        print( "Route capacity that we got back is ==================================================> "+ str(route_capacity))
+        logger.info( "Route capacity that we got back is ==================================================> "+ str(route_capacity))
         if route_capacity > -1:
             if route_capacity < 5:
-                print("the user is ", user.user_id)
-                print("the rotue is ", route.route_id)
+                logger.info("the user is " + user.user_id)
+                logger.info("the rotue is " + route.route_id)
                 trip = book_trip(user, route, "test", "test")
                 if trip:
-                    print("It got the trip yes ------------------------------------------------------------")
+                    logger.info("It got the trip yes ------------------------------------------------------------")
                     return_result["trip_id"] = trip.trip_id
                     return_result['city'] = selectedCity
                     return_result['country'] = selectedCountry
                     return_result['route'] = selectedRoute
                 else:
-                    print("Booking is full")
+                    logger.info("Booking is full")
                     error = "Booking is full"
                     return_result = None
 
             else:
-                print("booking seems to be full")
+                logger.info("booking seems to be full")
                 error = "Booking is Full"
                 return_result['trip_id'] = None
         else:
-            print("There is an error with route capacity")
+            logger.info("There is an error with route capacity")
             error = "There is an error with route capacity, Try again "
             return_result['trip_id'] = None
 
     except Exception as e:
-        print("There was an error " + str(e))
+        logger.exception("There was an error " + str(e))
         error = e
 
     result['return_result'] = return_result
     result['Status'] = "Success"
 
-    print("The data that is being send back is ")
-    print(result['return_result'])
+    logger.info("The data that is being send back is ")
+    logger.info(result['return_result'])
+
+    if np.random.rand() <= 0.4:
+        logger.info("There was a network failure")
+        return web.Response(text=json.dumps({"Status": "There was an unkown error"}), status = 400)
+        
 
     if error:
         return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}),status=201)
@@ -116,27 +141,27 @@ async def getBookedTrips(request):
     try:
         trips = get_user_trips(User(userid, "test"))
         if trips:
-            print("There are the trips")
-            print(trips)
+            logger.info("There are the trips")
+            logger.info(trips)
             for trip in trips:
-                print("This is the trip")
-                print(trip.trip_id)
+                logger.info("This is the trip")
+                logger.info(trip.trip_id)
                 return_result[ trip.trip_id] = trip.country + "," + trip.city + "," + trip.route_id
         else:
             error = "The no trips for the user"
             return_result = None
 
     except Exception as e:
-        print("There was an error " + str(e))
+        logger.exception("There was an error " + str(e))
         error = e
 
     result = {}
     result['return_result'] = return_result
     result['Status'] = "Success"
 
-    print("The data that is being send back is ")
-    print(result['return_result'])
-    print(return_result)
+    logger.info("The data that is being send back is ")
+    logger.info(result['return_result'])
+    logger.info(return_result)
 
     if error:
         return web.Response(text=json.dumps({"Status": "There was and Error: " + str(error)}), status=201)
@@ -154,31 +179,32 @@ async def cancelTrip(request):
     trip_id = body['trip_id']
     return_result = {}
 
-    # print("The selected Route is " + selectedRoute)
-    # print("The selected City is " + selectedCity)
+    # logger.info("The selected Route is " + selectedRoute)
+    # logger.info("The selected City is " + selectedCity)
     nested_dict = {}
     nested_dict = {'id': userid, 'data': {'tripid': trip_id}}
 
     error = None
     try:
-        print("debug point 1")
+        logger.info("debug point 1")
         trip = Trip(trip_id, "test", "test", "test", "test", "test", "test","test", "test", "test", "test")
         is_cancelled = cancel_trip(trip)
         if is_cancelled:
             return_result['is_cancelled'] = is_cancelled
-            print("Cancelled trip successful")
+            logger.info("Cancelled trip successful")
         else:
             error = "There was an error cancelling this trip"
-            print("There was an error cancelling")
+            logger.info("There was an error cancelling")
 
     except Exception as e:
-        print("There was an error in exception " + str(e))
+        logger.exception("There was an error in exception " + str(e))
         error = e
 
     result = {}
     result['return_result'] = return_result
     result['Status'] = "Success"
 
+    
     if error:
         return web.Response(text=json.dumps(  {"Status": "There was and Error: " + str(error)}),  status=201)
     if result['return_result']:
