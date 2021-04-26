@@ -18,6 +18,7 @@ services:
         depends_on:
            - aioapp1
            - aioapp2
+        restart: always
 
 networks:
     default:
