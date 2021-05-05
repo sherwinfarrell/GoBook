@@ -1,4 +1,4 @@
-FROM library/python:3.7-slim
+FROM python:3.8.0-slim
 COPY ./requirements.txt /requirements.txt
 WORKDIR /
 RUN pip3 install --upgrade pip

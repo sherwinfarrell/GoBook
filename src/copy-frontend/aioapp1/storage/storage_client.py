@@ -49,6 +49,7 @@ def get_current_route_capacity(route):
 
         return len(trips)
     except: 
+        print("something went wrong")
         return -1
 
 
