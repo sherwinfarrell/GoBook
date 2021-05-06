@@ -21,4 +21,4 @@ if __name__ == '__main__':
     # print(book_trip(user, route,  datetime.now(timezone.utc).isoformat(timespec='seconds'),  datetime.now(timezone.utc).isoformat(timespec='seconds')))
     # print(book_trip(user, route,  datetime.now(timezone.utc).isoformat(timespec='seconds'),  datetime.now(timezone.utc).isoformat(timespec='seconds')))
 
-    print(cancel_trip(trip))
+    print(TripsTable.describe_table()['TableStatus'])

@@ -23,7 +23,7 @@ logger.addHandler(stream_handler)
 def try_connect(region):
     logger.info('trying connection to ' + region.name + region.code)
     TripsTable.change_region(region)
-    TripsTable.describe_table()
+    assert TripsTable.describe_table()['TableStatus'] == 'ACTIVE'
 
 
 def check_connection(func):
