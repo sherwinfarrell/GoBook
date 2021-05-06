@@ -150,6 +150,8 @@ async def getBookedTrips(request):
 
     result = {}
     result['return_result'] = return_result
+    result["handler"] = "app2"
+
     result['Status'] = "Success"
 
     logger.info("The data that is being send back is ")

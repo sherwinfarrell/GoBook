@@ -34,7 +34,7 @@ def check_connection(func):
                 try_connect(region)
                 break
             except:
-                logger.exception(region.name + ' failed')
+                logger.info(region.name + ' failed')
         logger.info('processing request with ' + str(TripsTable.get_host_and_region()[1]))
         results = func(*args, **kwargs)
         TripsTable.change_region(ddb_config.regions[0]) # retores to deafult region
