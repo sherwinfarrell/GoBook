@@ -157,6 +157,7 @@ async def getBookedTrips(request):
 
     result = {}
     result['return_result'] = return_result
+    result["handler"] = "app1"
     result['Status'] = "Success"
 
     logger.info("The data that is being send back is ")
@@ -199,7 +200,7 @@ async def cancelTrip(request):
     except Exception as e:
         logger.exception("There was an error in exception " + str(e))
         error = e
-
+        
     result = {}
     result['return_result'] = return_result
     result['Status'] = "Success"

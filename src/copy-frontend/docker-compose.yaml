@@ -6,11 +6,15 @@ services:
         ports:
             - "5001:5000"
         env_file: ./aws.env
+        restart: always
+
     aioapp2:
         build: ./aioapp2
         ports:
             - "5002:5000"
         env_file: ./aws.env
+        restart: always
+
     nginx:
         build: ./nginx
         ports:
